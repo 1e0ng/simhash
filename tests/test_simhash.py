@@ -1,12 +1,16 @@
 # -*- coding: utf-8 -*-
 from unittest import main, TestCase
 
-from simhash import simhash
+from simhash import Simhash
 
 class TestSegmentTree(TestCase):
     def test_segtree(self):
-        h = simhash('How are you?')
-        self.assertEqual(h, 3572563133985320957)
+        sh = Simhash('How are you? I am fine. Thanks. And you?')
+        self.assertEqual(sh.value, 6460565663990245323)
+
+        sh2 = Simhash('How old are you ? :-) I am fine. Thanks. And you?')
+        self.assertEqual(sh.distance(sh2), 8)
+
 
 if __name__ == '__main__':
     main()
