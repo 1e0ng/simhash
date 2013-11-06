@@ -8,7 +8,9 @@ class Simhash(object):
         self.reg = ur'\w+'
         self.value = None
 
-        if isinstance(value, list):
+        if isinstance(value, Simhash):
+            self.value = value.value
+        elif isinstance(value, list):
             self.build_by_features(value)
         elif isinstance(value, long):
             self.value = value
