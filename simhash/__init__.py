@@ -33,7 +33,7 @@ class Simhash(object):
         return self.build_by_features(features)
 
     def build_by_features(self, features):
-        print features
+        #print features
         hashs = [int(hashlib.md5(w.encode('utf-8')).hexdigest(), 16) for w in features]
         v = [0]*self.f
         for h in hashs:
