@@ -1,5 +1,6 @@
 #Created by Liang Sun in 2013
 import re
+import collections
 import hashlib
 
 class Simhash(object):
@@ -10,14 +11,16 @@ class Simhash(object):
 
         if isinstance(value, Simhash):
             self.value = value.value
-        elif isinstance(value, list):
+        elif isinstance(value, basestring):
+            self.build_by_text(unicode(value))
+        elif isinstance(value, collections.Iterable):
             self.build_by_features(value)
         elif isinstance(value, long):
             self.value = value
         elif isinstance(value, Simhash):
             self.value = value.hash
         else:
-            self.build_by_text(value)
+            raise Exception('Bad parameter')
 
     def _slide(self, content, width=2):
         return [content[i:i+width] for i in xrange(len(content)-width+1)]
