@@ -5,7 +5,7 @@ import hashlib
 class Simhash(object):
     def __init__(self, value):
         self.f = 64
-        self.reg = ur'\w+'
+        self.reg = ur'[\w\u4e00-\u9fff]+'
         self.value = None
 
         if isinstance(value, Simhash):
