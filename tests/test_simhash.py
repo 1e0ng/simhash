@@ -14,6 +14,8 @@ class TestSegmentTree(TestCase):
         sh3 = Simhash(sh2)
         self.assertEqual(sh2.distance(sh3), 0)
 
+        self.assertNotEqual(Simhash('1').distance(Simhash('2')), 0)
+
 
 if __name__ == '__main__':
     main()

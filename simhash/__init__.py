@@ -23,7 +23,7 @@ class Simhash(object):
             raise Exception('Bad parameter')
 
     def _slide(self, content, width=2):
-        return [content[i:i+width] for i in xrange(len(content)-width+1)]
+        return [content[i:i+width] for i in xrange(max(len(content)-width+1, 1))]
 
     def _tokenize(self, content):
         ans = []
