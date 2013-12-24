@@ -4,9 +4,9 @@ import collections
 import hashlib
 
 class Simhash(object):
-    def __init__(self, value):
-        self.f = 64
-        self.reg = ur'[\w\u4e00-\u9fff]+'
+    def __init__(self, value, f=64, reg=ur'[\w\u4e00-\u9fff]+'):
+        self.f = f
+        self.reg = reg
         self.value = None
 
         if isinstance(value, Simhash):
