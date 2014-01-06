@@ -17,8 +17,6 @@ class Simhash(object):
             self.build_by_features(value)
         elif isinstance(value, long):
             self.value = value
-        elif isinstance(value, Simhash):
-            self.value = value.hash
         else:
             raise Exception('Bad parameter')
 
