@@ -5,4 +5,4 @@ This is a Python implementation of [Simhash](http://www.wwwconference.org/www200
 
 ## Build Status
 
-[![Build Status](https://travis-ci.org/liangsun/simhash.png)](https://travis-ci.org/liangsun/simhash)
+[![Build Status](https://travis-ci.org/liangsun/simhash.png?branch=master)](https://travis-ci.org/liangsun/simhash)
