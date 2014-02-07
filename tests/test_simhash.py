@@ -3,14 +3,16 @@ from unittest import main, TestCase
 
 from simhash import Simhash
 
-class TestSegmentTree(TestCase):
-    def test_segtree(self):
+class TestSimhash(TestCase):
+    def test_value(self):
         sh = Simhash('How are you? I AM fine. Thanks. And you?')
         #self.assertEqual(sh._features, [])
-        self.assertEqual(sh.value, 8704894745043123761L)
+        self.assertEqual(sh.value, 6560575042654586091L)
 
+    def test_distance(self):
+        sh = Simhash('How are you? I AM fine. Thanks. And you?')
         sh2 = Simhash('How old are you ? :-) i am fine. Thanks. And you?')
-        self.assertEqual(sh.distance(sh2), 9)
+        self.assertEqual(sh.distance(sh2), 7)
 
         sh3 = Simhash(sh2)
         self.assertEqual(sh2.distance(sh3), 0)

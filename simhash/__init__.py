@@ -4,7 +4,7 @@ import collections
 import hashlib
 
 class Simhash(object):
-    def __init__(self, value, f=64, reg=ur'(?:\w+|[\u4e00-\u9fff])'):
+    def __init__(self, value, f=64, reg=ur'[\w\u4e00-\u9fff]+'):
         self.f = f
         self.reg = reg
         self.value = None
@@ -26,13 +26,12 @@ class Simhash(object):
     def _tokenize(self, content):
         ans = []
         content = content.lower()
-        content = re.findall(self.reg, content)
+        content = ''.join(re.findall(self.reg, content))
         ans = self._slide(content)
         return ans
 
     def build_by_text(self, content):
         features = self._tokenize(content)
-        features = [u'/'.join(f) for f in features]
         self._features = features
         return self.build_by_features(features)
 
