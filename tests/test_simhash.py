@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from unittest import main, TestCase
 
-from simhash import Simhash
+from simhash import Simhash, SimhashIndex
 
 class TestSimhash(TestCase):
     def test_value(self):
@@ -25,6 +25,25 @@ class TestSimhash(TestCase):
 
         #self.assertEqual(sh1._features, [])
         self.assertEqual(sh1.distance(sh2), 0)
+
+class TestSimhashIndex(TestCase):
+    def setUp(self):
+        data = {
+            1: u'How are you? I Am fine. blar blar blar blar blar Thanks.',
+            2: u'How are you i am fine. blar blar blar blar blar than',
+            3: u'This is simhash test.',
+        }
+        objs = [(str(k), Simhash(v)) for k, v in data.items()]
+        self.index = SimhashIndex(objs)
+
+    def test_bucket_size(self):
+        self.assertEqual(self.index.bucket_size(), 6)
+
+    def test_get_near_dup(self):
+        s1 = Simhash(u'How are you i am fine. blar blar blar blar blar thank')
+        dups = self.index.get_near_dups(s1)
+
+        self.assertEqual(len(dups), 2)
 
 
 if __name__ == '__main__':
