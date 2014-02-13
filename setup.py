@@ -4,9 +4,10 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'simhash',
-    version = '1.0.1',
+    version = '1.1.0',
     keywords = ('simhash'),
     description = 'A Python implementation of Simhash Algorithm',
+    long_description = open('README.md').read(),
     license = 'MIT License',
 
     url = 'http://liangsun.org/posts/a-python-implementation-of-simhash-algorithm/',
