@@ -2,13 +2,27 @@
 import re
 import logging
 import collections
-import hashlib
 
 class Simhash(object):
-    def __init__(self, value, f=64, reg=ur'[\w\u4e00-\u9fff]+'):
+    def __init__(self, value, f=64, reg=ur'[\w\u4e00-\u9fff]+', hashfunc=None):
+        '''
+        `f` is the dimensions of fingerprints
+
+        `reg` is meaningful only when `value` is basestring
+
+        `hashfunc` accepts a utf-8 encoded string and returns a unsigned
+        integer in at least `f` bits.
+        '''
+
         self.f = f
         self.reg = reg
         self.value = None
+
+        if hashfunc is None:
+            import hashlib
+            self.hashfunc = lambda x: int(hashlib.md5(x).hexdigest(), 16)
+        else:
+            self.hashfunc = hashfunc
 
         if isinstance(value, Simhash):
             self.value = value.value
@@ -37,16 +51,16 @@ class Simhash(object):
         return self.build_by_features(features)
 
     def build_by_features(self, features):
-        hashs = [int(hashlib.md5(w.encode('utf-8')).hexdigest(), 16) for w in features]
+        hashs = [self.hashfunc(w.encode('utf-8')) for w in features]
         v = [0]*self.f
+        masks = [1 << i for i in xrange(self.f)]
         for h in hashs:
             for i in xrange(self.f):
-                mask = 1 << i
-                v[i] += 1 if h & mask else -1
+                v[i] += 1 if h & masks[i] else -1
         ans = 0
         for i in xrange(self.f):
             if v[i] >= 0:
-                ans |= 1 << i
+                ans |= masks[i]
         self.value = ans
 
     def distance(self, another):
