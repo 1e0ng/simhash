@@ -122,8 +122,8 @@ class SimhashIndex(object):
         self.bucket = {}
 
         for i, q in enumerate(objs):
-            if i % 1000 == 0:
-                logging.info('%s/%s', i, count)
+            if i % 10000 == 0 or i == count-1:
+                logging.info('%s/%s', i+1, count)
 
             self.add(*q)
 
