@@ -89,7 +89,7 @@ class SimhashIndex(object):
                 logging.warning('Big bucket found. key:%s, len(ret):%s', key, len(ret))
 
             for r in ret:
-                sim2, obj_id = r.split(',')
+                sim2, obj_id = r.split(',', 1)
                 sim2 = Simhash(long(sim2, 16))
 
                 d = simhash.distance(sim2)
