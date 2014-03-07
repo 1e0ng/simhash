@@ -8,7 +8,10 @@ class Simhash(object):
         '''
         `f` is the dimensions of fingerprints
 
-        `reg` is meaningful only when `value` is basestring
+        `reg` is meaningful only when `value` is basestring and describes
+        what is considered to be a letter inside parsed string. Regexp
+        object can also be specified (some attempt to handle any letters
+        is to specify reg=re.compile(r'\w', re.UNICODE))
 
         `hashfunc` accepts a utf-8 encoded string and returns a unsigned
         integer in at least `f` bits.
