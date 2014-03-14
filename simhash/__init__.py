@@ -26,6 +26,7 @@ class Simhash(object):
 
         if isinstance(value, Simhash):
             self.value = value.value
+            self.f = value.f
         elif isinstance(value, basestring):
             self.build_by_text(unicode(value))
         elif isinstance(value, collections.Iterable):
@@ -64,6 +65,8 @@ class Simhash(object):
         self.value = ans
 
     def distance(self, another):
+        if self.f != another.f:
+            raise ValueError('Must have same bit length')
         x = (self.value ^ another.value) & ((1 << self.f) - 1)
         ans = 0
         while x:
@@ -71,26 +74,40 @@ class Simhash(object):
             x &= x-1
         return ans
 
+    @property
+    def bucket_keys(self):
+        # Create offsets for a total of three buckets.
+        i1 = 0
+        i2 = self.f // 3  # E.g. 64 // 3 = 21
+        i3 = i2 * 2       # E.g. 21 * 2 = 42
+        offsets = [i1, i2, i3]
+        keys = []
+        low_i2 = 2**i2 - 1
+        high_i2 = 2**(i2+1) - 1
+        for offset in offsets:
+            c = self.value >> offset & (i3==offset and high_i2 or low_i2)
+            keys.append('%x:%x' % (c, offset/i2))
+        return keys
+
+
 class SimhashIndex(object):
     '''
     simhash is an instance of Simhash
-    
+
     return a list of obj_id, which is in type of str
     '''
     def get_near_dups(self, simhash, tolerance=2):
         ans = set()
 
-        for offset in [0, 21, 42]:
-            n = simhash.value >> offset & (42==offset and 0x3fffff or 0x1fffff)
-            key = '%x:%x' % (n, offset/21)
+        for key in simhash.bucket_keys:
             ret = self.bucket.get(key, set())
             logging.debug('key:%s', key)
             if len(ret) > 100:
                 logging.warning('Big bucket found. key:%s, len(ret):%s', key, len(ret))
 
             for r in ret:
-                sim2, obj_id = r.split(',')
-                sim2 = Simhash(long(sim2, 16))
+                sim2, f, obj_id = r.split(',')
+                sim2 = Simhash(long(sim2, 16), long(f))
 
                 d = simhash.distance(sim2)
                 if d <= tolerance:
@@ -102,11 +119,8 @@ class SimhashIndex(object):
     simhash is an instance of Simhash
     '''
     def add(self, obj_id, simhash):
-        for offset in [0, 21, 42]:
-            c = simhash.value >> offset & (42==offset and 0x3fffff or 0x1fffff)
-
-            k = '%x:%x' % (c, offset/21)
-            v = '%x,%s' % (simhash.value, obj_id)
+        for k in simhash.bucket_keys:
+            v = '%x,%s,%s' % (simhash.value, simhash.f, obj_id)
 
             self.bucket.setdefault(k, set())
             self.bucket[k].add(v)
