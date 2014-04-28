@@ -8,7 +8,10 @@ class Simhash(object):
         '''
         `f` is the dimensions of fingerprints
 
-        `reg` is meaningful only when `value` is basestring
+        `reg` is meaningful only when `value` is basestring and describes
+        what is considered to be a letter inside parsed string. Regexp
+        object can also be specified (some attempt to handle any letters
+        is to specify reg=re.compile(r'\w', re.UNICODE))
 
         `hashfunc` accepts a utf-8 encoded string and returns a unsigned
         integer in at least `f` bits.
@@ -89,7 +92,7 @@ class SimhashIndex(object):
                 logging.warning('Big bucket found. key:%s, len(ret):%s', key, len(ret))
 
             for r in ret:
-                sim2, obj_id = r.split(',')
+                sim2, obj_id = r.split(',', 1)
                 sim2 = Simhash(long(sim2, 16))
 
                 d = simhash.distance(sim2)
