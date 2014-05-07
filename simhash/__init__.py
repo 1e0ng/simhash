@@ -67,6 +67,7 @@ class Simhash(object):
         self.value = ans
 
     def distance(self, another):
+        assert self.f == another.f
         x = (self.value ^ another.value) & ((1 << self.f) - 1)
         ans = 0
         while x:
@@ -75,17 +76,19 @@ class Simhash(object):
         return ans
 
 class SimhashIndex(object):
-    '''
-    simhash is an instance of Simhash
-    
-    return a list of obj_id, which is in type of str
-    '''
-    def get_near_dups(self, simhash, tolerance=2):
+    def get_near_dups(self, simhash):
+        '''
+        `simhash` is an instance of Simhash
+        return a list of obj_id, which is in type of str
+        '''
+        assert simhash.f == self.f
+
         ans = set()
 
-        for offset in [0, 21, 42]:
-            n = simhash.value >> offset & (42==offset and 0x3fffff or 0x1fffff)
-            key = '%x:%x' % (n, offset/21)
+        for i, offset in enumerate(self.offsets):
+            m = (i == len(self.offsets) - 1 and 2**(self.f - offset) - 1 or 2**(self.offsets[i + 1] - offset) - 1)
+            n = simhash.value >> offset & m
+            key = '%x:%x' % (n, i)
             ret = self.bucket.get(key, set())
             logging.debug('key:%s', key)
             if len(ret) > 100:
@@ -93,32 +96,39 @@ class SimhashIndex(object):
 
             for r in ret:
                 sim2, obj_id = r.split(',', 1)
-                sim2 = Simhash(long(sim2, 16))
+                sim2 = Simhash(long(sim2, 16), self.f)
 
                 d = simhash.distance(sim2)
-                if d <= tolerance:
+                if d <= self.k:
                     ans.add(obj_id)
         return list(ans)
 
-    '''
-    obj_id is a string
-    simhash is an instance of Simhash
-    '''
     def add(self, obj_id, simhash):
-        for offset in [0, 21, 42]:
-            c = simhash.value >> offset & (42==offset and 0x3fffff or 0x1fffff)
+        '''
+        `obj_id` is a string
+        `simhash` is an instance of Simhash
+        '''
+        assert simhash.f == self.f
 
-            k = '%x:%x' % (c, offset/21)
+        for i, offset in enumerate(self.offsets):
+            m = (i == len(self.offsets) - 1 and 2**(self.f - offset) - 1 or 2**(self.offsets[i + 1] - offset) - 1)
+            c = simhash.value >> offset & m
+
+            k = '%x:%x' % (c, i)
             v = '%x,%s' % (simhash.value, obj_id)
 
             self.bucket.setdefault(k, set())
             self.bucket[k].add(v)
 
-    '''
-    objs is a list of (obj_id, simhash)
-    obj_id is a string, simhash is an instance of Simhash
-    '''
-    def __init__(self, objs):
+    def __init__(self, objs, f=64, k=2):
+        '''
+        `objs` is a list of (obj_id, simhash)
+        obj_id is a string, simhash is an instance of Simhash
+        `f` is the same with the one for Simhash
+        `k` is the toleranec
+        '''
+        self.k = k
+        self.f = f
         count = len(objs)
         logging.info('Initializing %s data.', count)
 
@@ -129,6 +139,13 @@ class SimhashIndex(object):
                 logging.info('%s/%s', i+1, count)
 
             self.add(*q)
+
+    @property
+    def offsets(self):
+        '''
+        You may optimize this method according to <http://www.wwwconference.org/www2007/papers/paper215.pdf>
+        '''
+        return [self.f / (self.k + 1) * i for i in xrange(self.k + 1)]
 
     def bucket_size(self):
         return len(self.bucket)
