@@ -4,6 +4,9 @@ from unittest import main, TestCase
 from simhash import Simhash, SimhashIndex
 
 class TestSimhash(TestCase):
+    def test_value(self):
+        self.assertEqual(Simhash(['aaa', 'bbb']).value, 8637903533912358349)
+
     def test_distance(self):
         sh = Simhash('How are you? I AM fine. Thanks. And you?')
         sh2 = Simhash('How old are you ? :-) i am fine. Thanks. And you?')
