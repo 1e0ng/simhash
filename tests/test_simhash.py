@@ -31,10 +31,12 @@ class TestSimhash(TestCase):
 
 
     def test_short(self):
-        sh1 = Simhash('aa')
-        sh2 = Simhash('aaa')
+        shs = [Simhash(s).value for s in ('aa', 'aaa', 'aaaa', 'aaaab', 'aaaaabb', 'aaaaabbb')]
 
-        self.assertNotEqual(sh1.value, sh2.value)
+        for i, sh1 in enumerate(shs):
+            for j, sh2 in enumerate(shs):
+                if i != j:
+                    self.assertNotEqual(sh1, sh2)
 
 
 class TestSimhashIndex(TestCase):
