@@ -113,6 +113,19 @@ class SimhashIndex(object):
             self.bucket.setdefault(key, set())
             self.bucket[key].add(v)
 
+    def delete(self, obj_id, simhash):
+        '''
+        `obj_id` is a string
+        `simhash` is an instance of Simhash
+        '''
+        assert simhash.f == self.f
+
+        for key in self.get_keys(simhash):
+            v = '%x,%s' % (simhash.value, obj_id)
+
+            if v in self.bucket.get(key, set()):
+                self.bucket[key].remove(v)
+
     def __init__(self, objs, f=64, k=2):
         '''
         `objs` is a list of (obj_id, simhash)
