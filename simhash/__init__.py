@@ -75,6 +75,20 @@ class Simhash(object):
             x &= x-1
         return ans
 
+    def get_keys(self, k):
+        offsets = self.get_offsets(k)
+        for i, offset in enumerate(offsets):
+            m = (i == len(offsets)- 1 and 2**(self.f - offset) - 1 or 2**(offsets[i + 1] - offset) - 1)
+            c = self.value >> offset & m
+            yield '%x:%x' % (c, i)
+
+    def get_offsets(self, k):
+        '''
+        You may optimize this method according to <http://www.wwwconference.org/www2007/papers/paper215.pdf>
+        '''
+        return [self.f / (k + 1) * i for i in xrange(k + 1)]
+
+
 class SimhashIndex(object):
     def get_near_dups(self, simhash):
         '''
@@ -85,7 +99,7 @@ class SimhashIndex(object):
 
         ans = set()
 
-        for key in self.get_keys(simhash):
+        for key in simhash.get_keys(self.k):
             dups = self.bucket.get(key, set())
             logging.debug('key:%s', key)
             if len(dups) > 100:
@@ -107,7 +121,7 @@ class SimhashIndex(object):
         '''
         assert simhash.f == self.f
 
-        for key in self.get_keys(simhash):
+        for key in simhash.get_keys(self.k):
             v = '%x,%s' % (simhash.value, obj_id)
 
             self.bucket.setdefault(key, set())
@@ -120,7 +134,7 @@ class SimhashIndex(object):
         '''
         assert simhash.f == self.f
 
-        for key in self.get_keys(simhash):
+        for key in simhash.get_keys(self.k):
             v = '%x,%s' % (simhash.value, obj_id)
 
             if v in self.bucket.get(key, set()):
@@ -145,19 +159,6 @@ class SimhashIndex(object):
                 logging.info('%s/%s', i+1, count)
 
             self.add(*q)
-
-    @property
-    def offsets(self):
-        '''
-        You may optimize this method according to <http://www.wwwconference.org/www2007/papers/paper215.pdf>
-        '''
-        return [self.f / (self.k + 1) * i for i in xrange(self.k + 1)]
-
-    def get_keys(self, simhash):
-        for i, offset in enumerate(self.offsets):
-            m = (i == len(self.offsets) - 1 and 2**(self.f - offset) - 1 or 2**(self.offsets[i + 1] - offset) - 1)
-            c = simhash.value >> offset & m
-            yield '%x:%x' % (c, i)
 
     def bucket_size(self):
         return len(self.bucket)
