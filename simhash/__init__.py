@@ -8,7 +8,10 @@ class Simhash(object):
         '''
         `f` is the dimensions of fingerprints
 
-        `reg` is meaningful only when `value` is basestring
+        `reg` is meaningful only when `value` is basestring and describes
+        what is considered to be a letter inside parsed string. Regexp
+        object can also be specified (some attempt to handle any letters
+        is to specify reg=re.compile(r'\w', re.UNICODE))
 
         `hashfunc` accepts a utf-8 encoded string and returns a unsigned
         integer in at least `f` bits.
@@ -35,7 +38,7 @@ class Simhash(object):
         else:
             raise Exception('Bad parameter')
 
-    def _slide(self, content, width=2):
+    def _slide(self, content, width=4):
         return [content[i:i+width] for i in xrange(max(len(content)-width+1, 1))]
 
     def _tokenize(self, content):
@@ -64,6 +67,7 @@ class Simhash(object):
         self.value = ans
 
     def distance(self, another):
+        assert self.f == another.f
         x = (self.value ^ another.value) & ((1 << self.f) - 1)
         ans = 0
         while x:
@@ -72,50 +76,65 @@ class Simhash(object):
         return ans
 
 class SimhashIndex(object):
-    '''
-    simhash is an instance of Simhash
-    
-    return a list of obj_id, which is in type of str
-    '''
-    def get_near_dups(self, simhash, tolerance=2):
+    def get_near_dups(self, simhash):
+        '''
+        `simhash` is an instance of Simhash
+        return a list of obj_id, which is in type of str
+        '''
+        assert simhash.f == self.f
+
         ans = set()
 
-        for offset in [0, 21, 42]:
-            n = simhash.value >> offset & (42==offset and 0x3fffff or 0x1fffff)
-            key = '%x:%x' % (n, offset/21)
-            ret = self.bucket.get(key, set())
+        for key in self.get_keys(simhash):
+            dups = self.bucket.get(key, set())
             logging.debug('key:%s', key)
-            if len(ret) > 100:
-                logging.warning('Big bucket found. key:%s, len(ret):%s', key, len(ret))
+            if len(dups) > 100:
+                logging.warning('Big bucket found. key:%s, len:%s', key, len(dups))
 
-            for r in ret:
-                sim2, obj_id = r.split(',')
-                sim2 = Simhash(long(sim2, 16))
+            for dup in dups:
+                sim2, obj_id = dup.split(',', 1)
+                sim2 = Simhash(long(sim2, 16), self.f)
 
                 d = simhash.distance(sim2)
-                if d <= tolerance:
+                if d <= self.k:
                     ans.add(obj_id)
         return list(ans)
 
-    '''
-    obj_id is a string
-    simhash is an instance of Simhash
-    '''
     def add(self, obj_id, simhash):
-        for offset in [0, 21, 42]:
-            c = simhash.value >> offset & (42==offset and 0x3fffff or 0x1fffff)
+        '''
+        `obj_id` is a string
+        `simhash` is an instance of Simhash
+        '''
+        assert simhash.f == self.f
 
-            k = '%x:%x' % (c, offset/21)
+        for key in self.get_keys(simhash):
             v = '%x,%s' % (simhash.value, obj_id)
 
-            self.bucket.setdefault(k, set())
-            self.bucket[k].add(v)
+            self.bucket.setdefault(key, set())
+            self.bucket[key].add(v)
 
-    '''
-    objs is a list of (obj_id, simhash)
-    obj_id is a string, simhash is an instance of Simhash
-    '''
-    def __init__(self, objs):
+    def delete(self, obj_id, simhash):
+        '''
+        `obj_id` is a string
+        `simhash` is an instance of Simhash
+        '''
+        assert simhash.f == self.f
+
+        for key in self.get_keys(simhash):
+            v = '%x,%s' % (simhash.value, obj_id)
+
+            if v in self.bucket.get(key, set()):
+                self.bucket[key].remove(v)
+
+    def __init__(self, objs, f=64, k=2):
+        '''
+        `objs` is a list of (obj_id, simhash)
+        obj_id is a string, simhash is an instance of Simhash
+        `f` is the same with the one for Simhash
+        `k` is the toleranec
+        '''
+        self.k = k
+        self.f = f
         count = len(objs)
         logging.info('Initializing %s data.', count)
 
@@ -126,6 +145,19 @@ class SimhashIndex(object):
                 logging.info('%s/%s', i+1, count)
 
             self.add(*q)
+
+    @property
+    def offsets(self):
+        '''
+        You may optimize this method according to <http://www.wwwconference.org/www2007/papers/paper215.pdf>
+        '''
+        return [self.f / (self.k + 1) * i for i in xrange(self.k + 1)]
+
+    def get_keys(self, simhash):
+        for i, offset in enumerate(self.offsets):
+            m = (i == len(self.offsets) - 1 and 2**(self.f - offset) - 1 or 2**(self.offsets[i + 1] - offset) - 1)
+            c = simhash.value >> offset & m
+            yield '%x:%x' % (c, i)
 
     def bucket_size(self):
         return len(self.bucket)
