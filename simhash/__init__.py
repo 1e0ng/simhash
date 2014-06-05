@@ -1,5 +1,6 @@
 #Created by Liang Sun in 2013
 import re
+import hashlib
 import logging
 import collections
 
@@ -22,8 +23,23 @@ class Simhash(object):
         self.value = None
 
         if hashfunc is None:
-            import hashlib
-            self.hashfunc = lambda x: int(hashlib.md5(x).hexdigest(), 16)
+            def _hashfunc(x):
+                return int(hashlib.md5(x).hexdigest(), 16)
+
+            _d = {}
+            t = ['','','']
+            def _dfs(n):
+                if n == -1:
+                    x = ''.join(t)
+                    _d[x] = _hashfunc(x)
+                for j in 'abcdefghijklmnopqrstuvwxyz':
+                    t[n] = j
+                    _dfs(n-1)
+                t[n] = ''
+                _dfs(n-1)
+
+            hashfunc = lambda x: _d.get(x, _hashfunc(x))
+            self.hashfunc = hashfunc
         else:
             self.hashfunc = hashfunc
 
@@ -40,6 +56,7 @@ class Simhash(object):
 
     def _slide(self, content, width=4):
         return [content[i:i+width] for i in xrange(max(len(content)-width+1, 1))]
+
 
     def _tokenize(self, content):
         ans = []

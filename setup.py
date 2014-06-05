@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'simhash',
-    version = '1.4.0',
+    version = '1.4.2',
     keywords = ('simhash'),
     description = 'A Python implementation of Simhash Algorithm',
     license = 'MIT License',
