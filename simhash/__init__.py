@@ -26,20 +26,7 @@ class Simhash(object):
             def _hashfunc(x):
                 return int(hashlib.md5(x).hexdigest(), 16)
 
-            _d = {}
-            t = ['','','']
-            def _dfs(n):
-                if n == -1:
-                    x = ''.join(t)
-                    _d[x] = _hashfunc(x)
-                for j in 'abcdefghijklmnopqrstuvwxyz':
-                    t[n] = j
-                    _dfs(n-1)
-                t[n] = ''
-                _dfs(n-1)
-
-            hashfunc = lambda x: _d.get(x, _hashfunc(x))
-            self.hashfunc = hashfunc
+            self.hashfunc = _hashfunc
         else:
             self.hashfunc = hashfunc
 
