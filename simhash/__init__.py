@@ -3,6 +3,7 @@ import re
 import hashlib
 import logging
 import collections
+from simcache import SIMCACHE
 
 class Simhash(object):
     def __init__(self, value, f=64, reg=ur'[\w\u4e00-\u9fff]+', hashfunc=None):
@@ -24,6 +25,8 @@ class Simhash(object):
 
         if hashfunc is None:
             def _hashfunc(x):
+                if x in SIMCACHE:
+                    return SIMCACHE[x]
                 return int(hashlib.md5(x).hexdigest(), 16)
 
             self.hashfunc = _hashfunc
@@ -43,7 +46,6 @@ class Simhash(object):
 
     def _slide(self, content, width=4):
         return [content[i:i+width] for i in xrange(max(len(content)-width+1, 1))]
-
 
     def _tokenize(self, content):
         ans = []
@@ -92,7 +94,7 @@ class SimhashIndex(object):
         for key in self.get_keys(simhash):
             dups = self.bucket.get(key, set())
             logging.debug('key:%s', key)
-            if len(dups) > 100:
+            if len(dups) > 200:
                 logging.warning('Big bucket found. key:%s, len:%s', key, len(dups))
 
             for dup in dups:
