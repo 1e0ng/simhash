@@ -6,7 +6,7 @@ import collections
 from simcache import SIMCACHE
 
 class Simhash(object):
-    def __init__(self, value, f=64, reg=ur'[\w\u4e00-\u9fff]+', hashfunc=None):
+    def __init__(self, value, f=64, reg=ur'[\w\u4e00-\u9fcc]+', hashfunc=None):
         '''
         `f` is the dimensions of fingerprints
 
