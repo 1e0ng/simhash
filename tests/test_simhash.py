@@ -3,6 +3,7 @@ from unittest import main, TestCase
 
 from simhash import Simhash, SimhashIndex
 
+
 class TestSimhash(TestCase):
     def test_value(self):
         self.assertEqual(Simhash(['aaa', 'bbb']).value, 8637903533912358349)
@@ -44,9 +45,9 @@ class TestSimhash(TestCase):
 
 class TestSimhashIndex(TestCase):
     data = {
-        1: u'How are you? I Am fine. ablar ablar xyz blar blar blar blar blar blar blar Thanks.',
-        2: u'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar than',
-        3: u'This is a different one.',
+        1: 'How are you? I Am fine. ablar ablar xyz blar blar blar blar blar blar blar Thanks.',
+        2: 'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar than',
+        3: 'This is a different one.',
     }
 
     def setUp(self):
