@@ -12,6 +12,8 @@ if sys.version_info[0] >= 3:
     basestring = str
     unicode = str
     long = int
+else:
+    range = xrange
 
 
 class Simhash(object):
