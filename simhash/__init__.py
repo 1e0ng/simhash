@@ -109,7 +109,7 @@ class SimhashIndex(object):
 
             for dup in dups:
                 sim2, obj_id = dup.split(',', 1)
-                sim2 = Simhash(int(sim2, 16), self.f)
+                sim2 = Simhash(long(sim2, 16), self.f)
 
                 d = simhash.distance(sim2)
                 if d <= self.k:

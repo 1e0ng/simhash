@@ -45,35 +45,36 @@ class TestSimhash(TestCase):
 
 class TestSimhashIndex(TestCase):
     data = {
-        1: 'How are you? I Am fine. ablar ablar xyz blar blar blar blar blar blar blar Thanks.',
-        2: 'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar than',
-        3: 'This is a different one.',
+        1: 'How are you? I Am fine. blar blar blar blar blar Thanks.',
+        2: 'How are you i am fine. blar blar blar blar blar than',
+        3: 'This is simhash test.',
+        4: 'How are you i am fine. blar blar blar blar blar thank1',
     }
 
     def setUp(self):
         objs = [(str(k), Simhash(v)) for k, v in self.data.items()]
-        self.index = SimhashIndex(objs)
+        self.index = SimhashIndex(objs, k=10)
 
     def test_get_near_dup(self):
         s1 = Simhash(u'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank')
         dups = self.index.get_near_dups(s1)
+        self.assertEqual(len(dups), 3)
+
+        self.index.delete('1', Simhash(self.data[1]))
+        dups = self.index.get_near_dups(s1)
         self.assertEqual(len(dups), 2)
 
         self.index.delete('1', Simhash(self.data[1]))
-        dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 1)
-
-        self.index.delete('1', Simhash(self.data[1]))
-        dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 1)
-
-        self.index.add('1', Simhash(self.data[1]))
         dups = self.index.get_near_dups(s1)
         self.assertEqual(len(dups), 2)
 
         self.index.add('1', Simhash(self.data[1]))
         dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 2)
+        self.assertEqual(len(dups), 3)
+
+        self.index.add('1', Simhash(self.data[1]))
+        dups = self.index.get_near_dups(s1)
+        self.assertEqual(len(dups), 3)
 
 
 if __name__ == '__main__':
