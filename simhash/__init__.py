@@ -90,7 +90,7 @@ class Simhash(object):
             x &= x - 1
         return ans
 
-	def similarity(self, another):
+    def similarity(self, another):
         """Calculate how different this hash is from another simhash.
         Returns a float from 0.0 to 1.0 (inclusive)
         """
@@ -99,8 +99,8 @@ class Simhash(object):
         b = self.f
         if b!= another.f:
             raise Exception('Hashes must be of equal size to find similarity')
-        return float(b - self.distance(another)) / b		
-
+        return float(b - self.distance(another)) / b
+		
 class SimhashIndex(object):
     def get_near_dups(self, simhash):
         """
