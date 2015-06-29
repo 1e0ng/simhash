@@ -5,7 +5,7 @@ import sys
 import re
 import hashlib
 import logging
-import collections
+from collections import defaultdict, Iterable
 from .simcache import SIMCACHE
 
 if sys.version_info[0] >= 3:
@@ -17,6 +17,7 @@ else:
 
 
 class Simhash(object):
+
     def __init__(self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None):
         """
         `f` is the dimensions of fingerprints
@@ -48,7 +49,7 @@ class Simhash(object):
             self.value = value.value
         elif isinstance(value, basestring):
             self.build_by_text(unicode(value))
-        elif isinstance(value, collections.Iterable):
+        elif isinstance(value, Iterable):
             self.build_by_features(value)
         elif isinstance(value, long):
             self.value = value
@@ -92,7 +93,8 @@ class Simhash(object):
 
 
 class SimhashIndex(object):
-    def get_near_dups(self, simhash):
+
+    def get_near_dupes(self, simhash):
         """
         `simhash` is an instance of Simhash
         return a list of obj_id, which is in type of str
@@ -113,8 +115,8 @@ class SimhashIndex(object):
 
                 d = simhash.distance(sim2)
                 if d <= self.k:
-                    ans.add(obj_id)
-        return list(ans)
+                    ans.add((obj_id, d))
+        return ans
 
     def add(self, obj_id, simhash):
         """
@@ -125,8 +127,6 @@ class SimhashIndex(object):
 
         for key in self.get_keys(simhash):
             v = '%x,%s' % (simhash.value, obj_id)
-
-            self.bucket.setdefault(key, set())
             self.bucket[key].add(v)
 
     def delete(self, obj_id, simhash):
@@ -154,7 +154,7 @@ class SimhashIndex(object):
         count = len(objs)
         logging.info('Initializing %s data.', count)
 
-        self.bucket = {}
+        self.bucket = defaultdict(set)
 
         for i, q in enumerate(objs):
             if i % 10000 == 0 or i == count - 1:
