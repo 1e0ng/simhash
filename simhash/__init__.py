@@ -6,7 +6,6 @@ import re
 import hashlib
 import logging
 from collections import defaultdict, Iterable
-from simcache import SIMCACHE
 from scipy.sparse import csr_matrix
 
 
@@ -42,8 +41,6 @@ class Simhash(object):
 
         if hashfunc is None:
             def _hashfunc(x):
-                if x in SIMCACHE:
-                    return SIMCACHE[x]
                 return int(hashlib.md5(x).hexdigest(), 16)
 
             self.hashfunc = _hashfunc
