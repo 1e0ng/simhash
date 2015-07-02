@@ -57,7 +57,8 @@ class Simhash(object):
             raise Exception('Bad parameter with type {}'.format(type(value)))
 
     def _slide(self, content, width=4):
-        return [content[i:i + width] for i in range(max(len(content) - width + 1, 1))]
+        return [content[i:i + width]
+                for i in range(max(len(content) - width + 1, 1))]
 
     def _tokenize(self, content):
         content = content.lower()
@@ -107,7 +108,8 @@ class SimhashIndex(object):
             dups = self.bucket.get(key, set())
             logging.debug('key:%s', key)
             if len(dups) > 200:
-                logging.warning('Big bucket found. key:%s, len:%s', key, len(dups))
+                logging.warning('Big bucket found. key:%s, len:%s',
+                                key, len(dups))
 
             for dup in dups:
                 sim2, obj_id = dup.split(',', 1)
@@ -165,13 +167,15 @@ class SimhashIndex(object):
     @property
     def offsets(self):
         """
-        You may optimize this method according to <http://www.wwwconference.org/www2007/papers/paper215.pdf>
+        You may optimize this method according to
+        <http://www.wwwconference.org/www2007/papers/paper215.pdf>
         """
         return [self.f // (self.k + 1) * i for i in range(self.k + 1)]
 
     def get_keys(self, simhash):
         for i, offset in enumerate(self.offsets):
-            m = (i == len(self.offsets) - 1 and 2 ** (self.f - offset) - 1 or 2 ** (self.offsets[i + 1] - offset) - 1)
+            m = (i == len(self.offsets) - 1 and 2 ** (self.f - offset) - 1 or
+                 2 ** (self.offsets[i + 1] - offset) - 1)
             c = simhash.value >> offset & m
             yield '%x:%x' % (c, i)
 
