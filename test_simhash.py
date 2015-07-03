@@ -76,6 +76,8 @@ class TestSimhashIndex(TestCase):
         s1 = Simhash(u'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank')
         dupes = self.index.get_near_dupes(s1)
 
+        # This is because get_near_dupes now returns a list of
+        # (obj_id, dist) tuples
         self.assertTrue(isinstance(list(dupes)[0], tuple))
         self.assertEqual(len(list(dupes)[0]), 2)
 

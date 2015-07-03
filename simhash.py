@@ -167,7 +167,7 @@ class SimhashIndex(object):
     def get_near_dupes(self, simhash):
         """
         `simhash` is an instance of Simhash
-        return a list of obj_id, which is in type of str
+        return a list of `(obj_id, dist)` tuples, where `obj_id` is a str
         """
         assert simhash.f == self.f
 
