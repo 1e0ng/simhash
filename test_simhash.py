@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from unittest import main, TestCase
-from sklearn.feature_extraction.text import TfidfVectorizer
 from simhash import Simhash, SimhashIndex
 
 
@@ -44,6 +43,10 @@ class TestSimhash(TestCase):
                     self.assertNotEqual(sh1, sh2)
 
     def test_sparse_features(self):
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+        except ImportError:
+            return
         data = [
             'How are you? I Am fine. blar blar blar blar blar Thanks.',
             'How are you i am fine. blar blar blar blar blar than',
