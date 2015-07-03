@@ -52,7 +52,7 @@ class TestSimhash(TestCase):
         ]
         vec = TfidfVectorizer()
         D = vec.fit_transform(data)
-        voc = {i: w for w, i in vec.vocabulary_.items()}
+        voc = dict((i, w) for w, i in vec.vocabulary_.items())
         for i in range(D.shape[0]):
             Di = D.getrow(i)
             features = zip([voc[j] for j in Di.indices], Di.data)
