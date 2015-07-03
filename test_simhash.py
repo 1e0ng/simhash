@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from unittest import main, TestCase
-
+from sklearn.feature_extraction.text import TfidfVectorizer
 from simhash import Simhash, SimhashIndex
 
 
@@ -43,6 +43,21 @@ class TestSimhash(TestCase):
                 if i != j:
                     self.assertNotEqual(sh1, sh2)
 
+    def test_sparse_features(self):
+        data = [
+            'How are you? I Am fine. blar blar blar blar blar Thanks.',
+            'How are you i am fine. blar blar blar blar blar than',
+            'This is simhash test.',
+            'How are you i am fine. blar blar blar blar blar thank1'
+        ]
+        vec = TfidfVectorizer()
+        D = vec.fit_transform(data)
+        voc = {i: w for w, i in vec.vocabulary_.items()}
+        for i in range(D.shape[0]):
+            Di = D.getrow(i)
+            features = zip([voc[j] for j in Di.indices], Di.data)
+            self.assertNotEqual(Simhash(features).value, 0)
+
 
 class TestSimhashIndex(TestCase):
 
@@ -50,14 +65,14 @@ class TestSimhashIndex(TestCase):
         1: 'How are you? I Am fine. blar blar blar blar blar Thanks.',
         2: 'How are you i am fine. blar blar blar blar blar than',
         3: 'This is simhash test.',
-        4: 'How are you i am fine. blar blar blar blar blar thank1',
+        4: 'How are you i am fine. blar blar blar blar blar thank1'
     }
 
     def setUp(self):
         objs = [(str(k), Simhash(v)) for k, v in self.data.items()]
         self.index = SimhashIndex(objs, k=10)
 
-    def test_get_near_dup(self):
+    def test_get_near_dupes(self):
         s1 = Simhash(u'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank')
         dupes = self.index.get_near_dupes(s1)
 

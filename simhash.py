@@ -6,7 +6,6 @@ import re
 import hashlib
 import logging
 from collections import defaultdict, Iterable
-from scipy.sparse import csr_matrix
 
 
 if sys.version_info[0] >= 3:
@@ -19,8 +18,7 @@ else:
 
 class Simhash(object):
 
-    def __init__(self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None,
-                 sparse_voc=None):
+    def __init__(self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None):
         """
         `f` is the dimensions of fingerprints
 
@@ -31,8 +29,6 @@ class Simhash(object):
 
         `hashfunc` accepts a utf-8 encoded string and returns a unsigned
         integer in at least `f` bits.
-
-        `sparse_voc` is a word->index dict to use with sparse features.
         """
 
         self.f = f
@@ -51,8 +47,6 @@ class Simhash(object):
             self.value = value.value
         elif isinstance(value, basestring):
             self.build_by_text(unicode(value))
-        elif isinstance(value, csr_matrix):
-            self.build_by_sparse_features(value, sparse_voc)
         elif isinstance(value, Iterable):
             self.build_by_features(value)
         elif isinstance(value, long):
@@ -75,46 +69,15 @@ class Simhash(object):
         return self.build_by_features(features)
 
     def build_by_features(self, features):
-        hashs = [self.hashfunc(w.encode('utf-8')) for w in features]
         v = [0] * self.f
         masks = [1 << i for i in range(self.f)]
-        for h in hashs:
-            for i in range(self.f):
-                v[i] += 1 if h & masks[i] else -1
-        ans = 0
-        for i in range(self.f):
-            if v[i] >= 0:
-                ans |= masks[i]
-        self.value = ans
-
-    def build_by_sparse_features(self, features, voc=None):
-        """
-        Use TFIDF weights in the SimHash signature computation, instead
-        of simply -1/1 as with non-sparse version.
-
-        `features` must be either a str->float dict or a 1 x
-        n_features csr_matrix row.
-
-        `voc` if specified, must be a str->index dict, if not, the feature
-        index as string will be used (because the hash function expects a
-        string).
-        """
-
-        if isinstance(features, csr_matrix):
-            assert features.shape[0] == 1  # make sure it's a sparse row
-            features = dict(zip(features.indices, features.data))
-        assert isinstance(features, dict), \
-            'features must be a dict or csr_matrix sparse row'
-        if voc:
-            features = {voc[i]: w for i, w in features.items()}
-        else:
-            features = {str(i): w for i, w in features.items()}
-
-        hashs = [(self.hashfunc(t.encode('utf-8')), w)
-                 for t, w in features.items()]
-        v = [0] * self.f
-        masks = [1 << i for i in range(self.f)]
-        for h, w in hashs:
+        for f in features:
+            if isinstance(f, Iterable) and not isinstance(f, basestring):
+                h = self.hashfunc(f[0].encode('utf-8'))
+                w = f[1]
+            else:
+                h = self.hashfunc(f.encode('utf-8'))
+                w = 1
             for i in range(self.f):
                 v[i] += w if h & masks[i] else -w
         ans = 0
@@ -135,30 +98,25 @@ class Simhash(object):
 
 class SimhashIndex(object):
 
-    def get_near_dupes(self, simhash):
+    def __init__(self, objs, f=64, k=2):
         """
-        `simhash` is an instance of Simhash
-        return a list of obj_id, which is in type of str
+        `objs` is a list of (obj_id, simhash)
+        obj_id is a string, simhash is an instance of Simhash
+        `f` is the same with the one for Simhash
+        `k` is the tolerance
         """
-        assert simhash.f == self.f
+        self.k = k
+        self.f = f
+        count = len(objs)
+        logging.info('Initializing %s data.', count)
 
-        ans = set()
+        self.bucket = defaultdict(set)
 
-        for key in self.get_keys(simhash):
-            dups = self.bucket.get(key, set())
-            logging.debug('key:%s', key)
-            if len(dups) > 200:
-                logging.warning('Big bucket found. key:%s, len:%s',
-                                key, len(dups))
+        for i, q in enumerate(objs):
+            if i % 10000 == 0 or i == count - 1:
+                logging.info('%s/%s', i + 1, count)
 
-            for dup in dups:
-                sim2, obj_id = dup.split(',', 1)
-                sim2 = Simhash(long(sim2, 16), self.f)
-
-                d = simhash.distance(sim2)
-                if d <= self.k:
-                    ans.add((obj_id, d))
-        return ans
+            self.add(*q)
 
     def add(self, obj_id, simhash):
         """
@@ -184,26 +142,6 @@ class SimhashIndex(object):
             if v in self.bucket.get(key, set()):
                 self.bucket[key].remove(v)
 
-    def __init__(self, objs, f=64, k=2):
-        """
-        `objs` is a list of (obj_id, simhash)
-        obj_id is a string, simhash is an instance of Simhash
-        `f` is the same with the one for Simhash
-        `k` is the tolerance
-        """
-        self.k = k
-        self.f = f
-        count = len(objs)
-        logging.info('Initializing %s data.', count)
-
-        self.bucket = defaultdict(set)
-
-        for i, q in enumerate(objs):
-            if i % 10000 == 0 or i == count - 1:
-                logging.info('%s/%s', i + 1, count)
-
-            self.add(*q)
-
     @property
     def offsets(self):
         """
@@ -222,19 +160,27 @@ class SimhashIndex(object):
     def bucket_size(self):
         return len(self.bucket)
 
+    def get_near_dupes(self, simhash):
+        """
+        `simhash` is an instance of Simhash
+        return a list of obj_id, which is in type of str
+        """
+        assert simhash.f == self.f
 
-if __name__ == '__main__':
+        ans = set()
 
-    from sklearn.feature_extraction.text import TfidfVectorizer
-    vec = TfidfVectorizer()
-    data = [
-        u'How are you? I Am fine. blar blar blar blar blar Thanks.',
-        u'How are you i am fine. blar blar blar blar blar than',
-        u'This is simhash test.'
-    ]
-    D = vec.fit_transform(data)
-    voc = {w: i for i, w in vec.vocabulary_.items()}
-    for i in range(D.shape[0]):
-        print('shingles=%d, tfidf-no-voc=%d, tfidf-with-voc=%d' %
-              (Simhash(data[i]).value, Simhash(D.getrow(i)).value,
-               Simhash(D.getrow(i), sparse_voc=voc).value))
+        for key in self.get_keys(simhash):
+            dups = self.bucket.get(key, set())
+            logging.debug('key:%s', key)
+            if len(dups) > 200:
+                logging.warning('Big bucket found. key:%s, len:%s',
+                                key, len(dups))
+
+            for dup in dups:
+                sim2, obj_id = dup.split(',', 1)
+                sim2 = Simhash(long(sim2, 16), self.f)
+
+                d = simhash.distance(sim2)
+                if d <= self.k:
+                    ans.add((obj_id, d))
+        return ans
