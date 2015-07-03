@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from unittest import main, TestCase
-
 from simhash import Simhash, SimhashIndex
 
 
 class TestSimhash(TestCase):
+
     def test_value(self):
         self.assertEqual(Simhash(['aaa', 'bbb']).value, 8637903533912358349)
 
@@ -42,39 +42,65 @@ class TestSimhash(TestCase):
                 if i != j:
                     self.assertNotEqual(sh1, sh2)
 
+    def test_sparse_features(self):
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+        except ImportError:
+            return
+        data = [
+            'How are you? I Am fine. blar blar blar blar blar Thanks.',
+            'How are you i am fine. blar blar blar blar blar than',
+            'This is simhash test.',
+            'How are you i am fine. blar blar blar blar blar thank1'
+        ]
+        vec = TfidfVectorizer()
+        D = vec.fit_transform(data)
+        voc = dict((i, w) for w, i in vec.vocabulary_.items())
+        for i in range(D.shape[0]):
+            Di = D.getrow(i)
+            features = zip([voc[j] for j in Di.indices], Di.data)
+            self.assertNotEqual(Simhash(features).value, 0)
+
 
 class TestSimhashIndex(TestCase):
+
     data = {
         1: 'How are you? I Am fine. blar blar blar blar blar Thanks.',
         2: 'How are you i am fine. blar blar blar blar blar than',
         3: 'This is simhash test.',
-        4: 'How are you i am fine. blar blar blar blar blar thank1',
+        4: 'How are you i am fine. blar blar blar blar blar thank1'
     }
 
     def setUp(self):
         objs = [(str(k), Simhash(v)) for k, v in self.data.items()]
         self.index = SimhashIndex(objs, k=10)
 
-    def test_get_near_dup(self):
+    def test_get_near_dupes(self):
         s1 = Simhash(u'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank')
-        dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 3)
+        dupes = self.index.get_near_dupes(s1)
+
+        # This is because get_near_dupes now returns a list of
+        # (obj_id, dist) tuples
+        self.assertTrue(isinstance(list(dupes)[0], tuple))
+        self.assertEqual(len(list(dupes)[0]), 2)
+
+        self.assertEqual(len(dupes), 3)
 
         self.index.delete('1', Simhash(self.data[1]))
-        dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 2)
+        dupes = self.index.get_near_dupes(s1)
+        self.assertEqual(len(dupes), 2)
 
         self.index.delete('1', Simhash(self.data[1]))
-        dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 2)
+        dupes = self.index.get_near_dupes(s1)
+        self.assertEqual(len(dupes), 2)
 
         self.index.add('1', Simhash(self.data[1]))
-        dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 3)
+        dupes = self.index.get_near_dupes(s1)
+        self.assertEqual(len(dupes), 3)
 
         self.index.add('1', Simhash(self.data[1]))
-        dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 3)
+        dupes = self.index.get_near_dupes(s1)
+        self.assertEqual(len(dupes), 3)
 
 
 if __name__ == '__main__':
