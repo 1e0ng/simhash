@@ -69,6 +69,10 @@ class Simhash(object):
         return self.build_by_features(features)
 
     def build_by_features(self, features):
+        """
+        `features` might be a list of unweighted tokens (a weight of 1
+                   will be assumed) or a list of (token, weight) tuples.
+        """
         v = [0] * self.f
         masks = [1 << i for i in range(self.f)]
         for f in features:
