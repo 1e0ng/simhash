@@ -79,13 +79,13 @@ class Simhash(object):
         if isinstance(features, dict):
             features = features.items()
         for f in features:
-            if isinstance(f, collections.Iterable) and \
-               not isinstance(f, basestring):
-                h = self.hashfunc(f[0].encode('utf-8'))
-                w = f[1]
-            else:
+            if isinstance(f, basestring):
                 h = self.hashfunc(f.encode('utf-8'))
                 w = 1
+            else:
+                assert isinstance(f, collections.Iterable)
+                h = self.hashfunc(f[0].encode('utf-8'))
+                w = f[1]
             for i in range(self.f):
                 v[i] += w if h & masks[i] else -w
         ans = 0
