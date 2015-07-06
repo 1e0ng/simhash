@@ -42,6 +42,32 @@ class TestSimhash(TestCase):
                 if i != j:
                     self.assertNotEqual(sh1, sh2)
 
+    def test_sparse_features(self):
+        # only test if sklearn is present
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+        except ImportError:
+            return
+        data = [
+            'How are you? I Am fine. blar blar blar blar blar Thanks.',
+            'How are you i am fine. blar blar blar blar blar than',
+            'This is simhash test.',
+            'How are you i am fine. blar blar blar blar blar thank1'
+        ]
+        vec = TfidfVectorizer()
+        D = vec.fit_transform(data)
+        voc = dict((i, w) for w, i in vec.vocabulary_.items())
+        # test features as lists of (token, weight) tuples
+        for i in range(D.shape[0]):
+            Di = D.getrow(i)
+            features = zip([voc[j] for j in Di.indices], Di.data)
+            self.assertNotEqual(Simhash(features).value, 0)
+        # test features as token -> weight dicts
+        for i in range(D.shape[0]):
+            Di = D.getrow(i)
+            features = dict(zip([voc[j] for j in Di.indices], Di.data))
+            self.assertNotEqual(Simhash(features).value, 0)
+
 
 class TestSimhashIndex(TestCase):
     data = {
