@@ -75,6 +75,11 @@ class TestSimhash(TestCase):
         dict_features = dict(zip([voc[j] for j in D0.indices], D0.data))
         self.assertEqual(Simhash(dict_features).value, 17583409636488780916)
 
+        # the sparse and non-sparse features should obviously yield
+        # different results
+        self.assertNotEqual(Simhash(dict_features).value,
+                            Simhash(data[0]).value)
+
 
 class TestSimhashIndex(TestCase):
     data = {
