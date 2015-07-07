@@ -57,16 +57,23 @@ class TestSimhash(TestCase):
         vec = TfidfVectorizer()
         D = vec.fit_transform(data)
         voc = dict((i, w) for w, i in vec.vocabulary_.items())
-        # test features as lists of (token, weight) tuples
+
+        # Verify that distance between data[0] and data[1] is < than
+        # data[2] and data[3]
+        shs = []
         for i in range(D.shape[0]):
             Di = D.getrow(i)
+            # features as list of (token, weight) tuples)
             features = zip([voc[j] for j in Di.indices], Di.data)
-            self.assertNotEqual(Simhash(features).value, 0)
-        # test features as token -> weight dicts
-        for i in range(D.shape[0]):
-            Di = D.getrow(i)
-            features = dict(zip([voc[j] for j in Di.indices], Di.data))
-            self.assertNotEqual(Simhash(features).value, 0)
+            shs.append(Simhash(features))
+        self.assertNotEqual(shs[0].distance(shs[1]), 0)
+        self.assertNotEqual(shs[2].distance(shs[3]), 0)
+        self.assertLess(shs[0].distance(shs[1]), shs[2].distance(shs[3]))
+
+        # features as token -> weight dicts
+        D0 = D.getrow(0)
+        dict_features = dict(zip([voc[j] for j in D0.indices], D0.data))
+        self.assertEqual(Simhash(dict_features).value, 17583409636488780916)
 
 
 class TestSimhashIndex(TestCase):
