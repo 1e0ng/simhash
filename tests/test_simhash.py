@@ -42,6 +42,44 @@ class TestSimhash(TestCase):
                 if i != j:
                     self.assertNotEqual(sh1, sh2)
 
+    def test_sparse_features(self):
+        # only test if sklearn is present
+        try:
+            from sklearn.feature_extraction.text import TfidfVectorizer
+        except ImportError:
+            return
+        data = [
+            'How are you? I Am fine. blar blar blar blar blar Thanks.',
+            'How are you i am fine. blar blar blar blar blar than',
+            'This is simhash test.',
+            'How are you i am fine. blar blar blar blar blar thank1'
+        ]
+        vec = TfidfVectorizer()
+        D = vec.fit_transform(data)
+        voc = dict((i, w) for w, i in vec.vocabulary_.items())
+
+        # Verify that distance between data[0] and data[1] is < than
+        # data[2] and data[3]
+        shs = []
+        for i in range(D.shape[0]):
+            Di = D.getrow(i)
+            # features as list of (token, weight) tuples)
+            features = zip([voc[j] for j in Di.indices], Di.data)
+            shs.append(Simhash(features))
+        self.assertNotEqual(shs[0].distance(shs[1]), 0)
+        self.assertNotEqual(shs[2].distance(shs[3]), 0)
+        self.assertLess(shs[0].distance(shs[1]), shs[2].distance(shs[3]))
+
+        # features as token -> weight dicts
+        D0 = D.getrow(0)
+        dict_features = dict(zip([voc[j] for j in D0.indices], D0.data))
+        self.assertEqual(Simhash(dict_features).value, 17583409636488780916)
+
+        # the sparse and non-sparse features should obviously yield
+        # different results
+        self.assertNotEqual(Simhash(dict_features).value,
+                            Simhash(data[0]).value)
+
 
 class TestSimhashIndex(TestCase):
     data = {

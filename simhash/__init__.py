@@ -69,12 +69,25 @@ class Simhash(object):
         return self.build_by_features(features)
 
     def build_by_features(self, features):
-        hashs = [self.hashfunc(w.encode('utf-8')) for w in features]
+        """
+        `features` might be a list of unweighted tokens (a weight of 1
+                   will be assumed), a list of (token, weight) tuples or
+                   a token -> weight dict.
+        """
         v = [0] * self.f
         masks = [1 << i for i in range(self.f)]
-        for h in hashs:
+        if isinstance(features, dict):
+            features = features.items()
+        for f in features:
+            if isinstance(f, basestring):
+                h = self.hashfunc(f.encode('utf-8'))
+                w = 1
+            else:
+                assert isinstance(f, collections.Iterable)
+                h = self.hashfunc(f[0].encode('utf-8'))
+                w = f[1]
             for i in range(self.f):
-                v[i] += 1 if h & masks[i] else -1
+                v[i] += w if h & masks[i] else -w
         ans = 0
         for i in range(self.f):
             if v[i] >= 0:
