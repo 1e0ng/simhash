@@ -17,6 +17,7 @@ else:
 
 
 class Simhash(object):
+
     def __init__(self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None):
         """
         `f` is the dimensions of fingerprints
@@ -105,6 +106,27 @@ class Simhash(object):
 
 
 class SimhashIndex(object):
+
+    def __init__(self, objs, f=64, k=2):
+        """
+        `objs` is a list of (obj_id, simhash)
+        obj_id is a string, simhash is an instance of Simhash
+        `f` is the same with the one for Simhash
+        `k` is the tolerance
+        """
+        self.k = k
+        self.f = f
+        count = len(objs)
+        logging.info('Initializing %s data.', count)
+
+        self.bucket = collections.defaultdict(set)
+
+        for i, q in enumerate(objs):
+            if i % 10000 == 0 or i == count - 1:
+                logging.info('%s/%s', i + 1, count)
+
+            self.add(*q)
+
     def get_near_dups(self, simhash):
         """
         `simhash` is an instance of Simhash
@@ -151,26 +173,6 @@ class SimhashIndex(object):
             v = '%x,%s' % (simhash.value, obj_id)
             if v in self.bucket[key]:
                 self.bucket[key].remove(v)
-
-    def __init__(self, objs, f=64, k=2):
-        """
-        `objs` is a list of (obj_id, simhash)
-        obj_id is a string, simhash is an instance of Simhash
-        `f` is the same with the one for Simhash
-        `k` is the tolerance
-        """
-        self.k = k
-        self.f = f
-        count = len(objs)
-        logging.info('Initializing %s data.', count)
-
-        self.bucket = collections.defaultdict(set)
-
-        for i, q in enumerate(objs):
-            if i % 10000 == 0 or i == count - 1:
-                logging.info('%s/%s', i + 1, count)
-
-            self.add(*q)
 
     @property
     def offsets(self):
