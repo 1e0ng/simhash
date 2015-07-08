@@ -115,7 +115,7 @@ class SimhashIndex(object):
         ans = set()
 
         for key in self.get_keys(simhash):
-            dups = self.bucket.get(key, set())
+            dups = self.bucket[key]
             logging.debug('key:%s', key)
             if len(dups) > 200:
                 logging.warning('Big bucket found. key:%s, len:%s', key, len(dups))
@@ -138,8 +138,6 @@ class SimhashIndex(object):
 
         for key in self.get_keys(simhash):
             v = '%x,%s' % (simhash.value, obj_id)
-
-            self.bucket.setdefault(key, set())
             self.bucket[key].add(v)
 
     def delete(self, obj_id, simhash):
@@ -151,8 +149,7 @@ class SimhashIndex(object):
 
         for key in self.get_keys(simhash):
             v = '%x,%s' % (simhash.value, obj_id)
-
-            if v in self.bucket.get(key, set()):
+            if v in self.bucket[key]:
                 self.bucket[key].remove(v)
 
     def __init__(self, objs, f=64, k=2):
@@ -167,7 +164,7 @@ class SimhashIndex(object):
         count = len(objs)
         logging.info('Initializing %s data.', count)
 
-        self.bucket = {}
+        self.bucket = collections.defaultdict(set)
 
         for i, q in enumerate(objs):
             if i % 10000 == 0 or i == count - 1:
