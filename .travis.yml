@@ -5,4 +5,8 @@ python:
   - "3.3"
   - "3.4"
 # command to run tests
+install:
+  - "pip install scipy"
+  - "pip install scikit-learn"
+
 script: nosetests
