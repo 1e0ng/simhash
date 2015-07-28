@@ -6,7 +6,7 @@ import re
 import hashlib
 import logging
 import collections
-from .simcache import SIMCACHE
+from itertools import groupby
 
 if sys.version_info[0] >= 3:
     basestring = str
@@ -37,8 +37,6 @@ class Simhash(object):
 
         if hashfunc is None:
             def _hashfunc(x):
-                if x in SIMCACHE:
-                    return SIMCACHE[x]
                 return int(hashlib.md5(x).hexdigest(), 16)
 
             self.hashfunc = _hashfunc
@@ -67,6 +65,7 @@ class Simhash(object):
 
     def build_by_text(self, content):
         features = self._tokenize(content)
+        features = {k:sum(1 for _ in g) for k, g in groupby(sorted(features))}
         return self.build_by_features(features)
 
     def build_by_features(self, features):
