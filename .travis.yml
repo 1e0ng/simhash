@@ -8,6 +8,7 @@ virtualenv:
 
 before_install:
   - pip install -U pip
+  - sudo apt-get install -qq python-scipy
 
 install:
   - travis_wait travis_retry pip install scikit-learn
