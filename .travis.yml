@@ -3,8 +3,13 @@ python:
   - "2.7"
   - "3.3"
   - "3.4"
-# command to run tests
+virtualenv:
+  system_site_packages: true
+
+before_install:
+  - pip install -U pip
+
 install:
-  - "pip install scikit-learn"
+  - travis_wait travis_retry pip install scikit-learn
 
 script: nosetests
