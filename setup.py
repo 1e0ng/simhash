@@ -4,14 +4,14 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'simhash',
-    version = '1.6.2',
+    version = '1.7.0',
     keywords = ('simhash'),
     description = 'A Python implementation of Simhash Algorithm',
     license = 'MIT License',
 
-    url = 'http://liangsun.org/posts/a-python-implementation-of-simhash-algorithm/',
-    author = 'Liang Sun',
-    author_email = 'i@liangsun.org',
+    url = 'https://leons.im/posts/a-python-implementation-of-simhash-algorithm/',
+    author = '1e0n',
+    author_email = 'i@leons.im',
 
     packages = find_packages(),
     include_package_data = True,

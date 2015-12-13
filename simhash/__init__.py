@@ -1,4 +1,4 @@
-# Created by Liang Sun in 2013
+# Created by 1e0n in 2013
 from __future__ import division, unicode_literals
 
 import sys
