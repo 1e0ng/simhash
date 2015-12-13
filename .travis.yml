@@ -4,10 +4,15 @@ python:
   - "3.4"
 
 before_install:
-  - pip install -U pip
-  - sudo apt-get install -qq python-scipy
+  - wget -q http://repo.continuum.io/miniconda/Miniconda-latest-Linux-x86_64.sh -O miniconda.sh
+  - chmod +x miniconda.sh
+  - ./miniconda.sh -b -p ~/anaconda
+  - export PATH=~/anaconda/bin:$PATH
+  - conda update --yes --quiet conda
 
 install:
-  - travis_wait travis_retry pip install scikit-learn
+  - conda create --yes -q -n pyenv python=$TRAVIS_PYTHON_VERSION pip numpy scipy scikit-learn nose pyyaml
+  - source activate pyenv
 
-script: nosetests
+script:
+  - nosetests
