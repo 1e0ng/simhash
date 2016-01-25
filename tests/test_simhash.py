@@ -5,6 +5,7 @@ from simhash import Simhash, SimhashIndex
 
 
 class TestSimhash(TestCase):
+
     def test_value(self):
         self.assertEqual(Simhash(['aaa', 'bbb']).value, 8637903533912358349)
 
@@ -32,7 +33,6 @@ class TestSimhash(TestCase):
 
         self.assertTrue(sh4.distance(sh6) < 3)
         self.assertTrue(sh5.distance(sh6) < 3)
-
 
     def test_short(self):
         shs = [Simhash(s).value for s in ('aa', 'aaa', 'aaaa', 'aaaab', 'aaaaabb', 'aaaaabbb')]
