@@ -16,6 +16,10 @@ else:
     range = xrange
 
 
+def _hashfunc(x):
+    return int(hashlib.md5(x).hexdigest(), 16)
+
+
 class Simhash(object):
 
     def __init__(self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None):
@@ -36,9 +40,6 @@ class Simhash(object):
         self.value = None
 
         if hashfunc is None:
-            def _hashfunc(x):
-                return int(hashlib.md5(x).hexdigest(), 16)
-
             self.hashfunc = _hashfunc
         else:
             self.hashfunc = hashfunc
