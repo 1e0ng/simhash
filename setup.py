@@ -9,7 +9,7 @@ setup(
     description = 'A Python implementation of Simhash Algorithm',
     license = 'MIT License',
 
-    url = 'https://leons.im/posts/a-python-implementation-of-simhash-algorithm/',
+    url = 'http://leons.im/posts/a-python-implementation-of-simhash-algorithm/',
     author = '1e0n',
     author_email = 'i@leons.im',
 

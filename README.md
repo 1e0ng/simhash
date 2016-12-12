@@ -5,8 +5,8 @@ This is a Python implementation of [Simhash](http://www.wwwconference.org/www200
 
 ## Getting Started
 
-<https://leons.im/posts/a-python-implementation-of-simhash-algorithm/>
+<http://leons.im/posts/a-python-implementation-of-simhash-algorithm/>
 
 ## Build Status
 
-[![Build Status](https://travis-ci.org/leonsim/simhash.png?branch=master)](https://travis-ci.org/leonsim/simhash)
+[![Build Status](https://travis-ci.org/leonliangsun/simhash.png?branch=master)](https://travis-ci.org/leonsim/simhash)
