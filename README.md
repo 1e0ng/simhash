@@ -9,4 +9,4 @@ This is a Python implementation of [Simhash](http://www.wwwconference.org/www200
 
 ## Build Status
 
-[![Build Status](https://travis-ci.org/leonliangsun/simhash.png?branch=master)](https://travis-ci.org/leonsim/simhash)
+[![Build Status](https://travis-ci.org/leonsim/simhash.png?branch=master)](https://travis-ci.org/leonsim/simhash)
