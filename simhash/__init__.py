@@ -22,7 +22,7 @@ def _hashfunc(x):
 
 class Simhash(object):
 
-    def __init__(self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None):
+    def __init__(self, value=None, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None):
         """
         `f` is the dimensions of fingerprints
 
@@ -37,7 +37,9 @@ class Simhash(object):
 
         self.f = f
         self.reg = reg
-        self.value = None
+        self._hash = None
+        self.features = {}
+        self.buffer = ''
 
         if hashfunc is None:
             self.hashfunc = _hashfunc
@@ -45,13 +47,15 @@ class Simhash(object):
             self.hashfunc = hashfunc
 
         if isinstance(value, Simhash):
-            self.value = value.value
+            self._hash = value._hash
         elif isinstance(value, basestring):
-            self.build_by_text(unicode(value))
+            self.update(unicode(value))
         elif isinstance(value, collections.Iterable):
-            self.build_by_features(value)
+            self.update(value)
         elif isinstance(value, long):
-            self.value = value
+            self._hash = value
+        elif value is None:
+            pass
         else:
             raise Exception('Bad parameter with type {}'.format(type(value)))
 
@@ -64,19 +68,22 @@ class Simhash(object):
         ans = self._slide(content)
         return ans
 
-    def build_by_text(self, content):
-        features = self._tokenize(content)
-        features = {k:sum(1 for _ in g) for k, g in groupby(sorted(features))}
-        return self.build_by_features(features)
-
-    def build_by_features(self, features):
+    def update(self, features):
         """
         `features` might be a list of unweighted tokens (a weight of 1
-                   will be assumed), a list of (token, weight) tuples or
-                   a token -> weight dict.
+                   will be assumed), a list of (token, weight) tuples, a
+                   token -> weight dict or a string.
         """
-        v = [0] * self.f
-        masks = [1 << i for i in range(self.f)]
+        if isinstance(features, (str, unicode)):
+            # If we receive a string, we will prepend our buffer, tokenize the
+            # result, and withhold the last token in our buffer.
+            if self.buffer:
+                features = self.buffer + features
+            if not features:
+                return
+            features = self._tokenize(features)
+            self.buffer = features.pop()
+            features = {k:sum(1 for _ in g) for k, g in groupby(sorted(features))}
         if isinstance(features, dict):
             features = features.items()
         for f in features:
@@ -87,13 +94,36 @@ class Simhash(object):
                 assert isinstance(f, collections.Iterable)
                 h = self.hashfunc(f[0].encode('utf-8'))
                 w = f[1]
+            self.features.setdefault(h, 0)
+            self.features[h] += w
+
+    # Preserve old interface.
+    build_by_features = update
+    build_by_text = update
+
+    def finalize(self):
+        if self.buffer:
+            # Flush and clear the buffer.
+            self.update([self.buffer])
+            self.buffer = ''
+        v = [0] * self.f
+        masks = [1 << i for i in range(self.f)]
+        for h, w in self.features.items():
             for i in range(self.f):
                 v[i] += w if h & masks[i] else -w
         ans = 0
         for i in range(self.f):
             if v[i] >= 0:
                 ans |= masks[i]
-        self.value = ans
+        self._hash = ans
+        # Remove the features we have accumulated.
+        self.features.clear()
+
+    @property
+    def value(self):
+        if self._hash is None:
+            self.finalize()
+        return self._hash
 
     def distance(self, another):
         assert self.f == another.f
