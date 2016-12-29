@@ -38,7 +38,7 @@ class Simhash(object):
         self.f = f
         self.reg = reg
         self._hash = None
-        self.features = {}
+        self.features = collections.Counter()
         self.buffer = ''
 
         if hashfunc is None:
@@ -88,13 +88,12 @@ class Simhash(object):
             features = features.items()
         for f in features:
             if isinstance(f, basestring):
-                h = self.hashfunc(f.encode('utf-8'))
+                h = f.encode('utf-8')
                 w = 1
             else:
                 assert isinstance(f, collections.Iterable)
-                h = self.hashfunc(f[0].encode('utf-8'))
+                h = f[0].encode('utf-8')
                 w = f[1]
-            self.features.setdefault(h, 0)
             self.features[h] += w
 
     # Preserve old interface.
@@ -109,6 +108,7 @@ class Simhash(object):
         v = [0] * self.f
         masks = [1 << i for i in range(self.f)]
         for h, w in self.features.items():
+            h = self.hashfunc(h)
             for i in range(self.f):
                 v[i] += w if h & masks[i] else -w
         ans = 0
