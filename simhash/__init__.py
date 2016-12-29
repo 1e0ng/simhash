@@ -22,7 +22,7 @@ def _hashfunc(x):
 
 class Simhash(object):
 
-    def __init__(self, value=None, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None):
+    def __init__(self, value=None, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=_hashfunc):
         """
         `f` is the dimensions of fingerprints
 
@@ -37,23 +37,19 @@ class Simhash(object):
 
         self.f = f
         self.reg = reg
-        self._hash = None
+        self.hash = None
         self.features = collections.Counter()
         self.buffer = ''
-
-        if hashfunc is None:
-            self.hashfunc = _hashfunc
-        else:
-            self.hashfunc = hashfunc
+        self.hashfunc = hashfunc
 
         if isinstance(value, Simhash):
-            self._hash = value._hash
+            self.hash = value.value
         elif isinstance(value, basestring):
             self.update(unicode(value))
         elif isinstance(value, collections.Iterable):
             self.update(value)
         elif isinstance(value, long):
-            self._hash = value
+            self.hash = value
         elif value is None:
             pass
         else:
@@ -115,15 +111,21 @@ class Simhash(object):
         for i in range(self.f):
             if v[i] >= 0:
                 ans |= masks[i]
-        self._hash = ans
+        self.hash = ans
         # Remove the features we have accumulated.
         self.features.clear()
 
     @property
     def value(self):
-        if self._hash is None:
+        if self.hash is None:
             self.finalize()
-        return self._hash
+        return self.hash
+
+    def digest(self):
+        return self.value
+
+    def hexdigest(self):
+        return hex(self.value)[2:-1]
 
     def distance(self, another):
         assert self.f == another.f
