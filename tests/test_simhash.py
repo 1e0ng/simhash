@@ -9,6 +9,24 @@ class TestSimhash(TestCase):
     def test_value(self):
         self.assertEqual(Simhash(['aaa', 'bbb']).value, 8637903533912358349)
 
+    def test_incremental_value(self):
+        sh = Simhash(['aaa'])
+        sh.update(['bbb'])
+        self.assertEqual(sh.value, 8637903533912358349)
+
+    def test_methods(self):
+        sh1 = Simhash('foobar')
+        sh2 = Simhash()
+        sh2.update('foobar')
+        self.assertEqual(sh1.value, sh2.value)
+
+    def test_blocks(self):
+        sh1 = Simhash('foobar')
+        sh2 = Simhash()
+        sh2.update('foo')
+        sh2.update('bar')
+        self.assertEqual(sh1.value, sh2.value)
+
     def test_distance(self):
         sh = Simhash('How are you? I AM fine. Thanks. And you?')
         sh2 = Simhash('How old are you ? :-) i am fine. Thanks. And you?')
