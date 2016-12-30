@@ -12,7 +12,6 @@ class TestSimhash(TestCase):
     def test_incremental_value(self):
         sh = Simhash(['aaa'])
         sh.update(['bbb'])
-        sh.finalize()
         self.assertEqual(sh.value, 8637903533912358349)
 
     def test_methods(self):

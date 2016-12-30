@@ -79,7 +79,7 @@ class Simhash(object):
                 return
             features = self._tokenize(features)
             self.buffer = features.pop()
-            features = {k:sum(1 for _ in g) for k, g in groupby(sorted(features))}
+            features = {k:len(list(g)) for k, g in groupby(sorted(features))}
         if isinstance(features, dict):
             features = features.items()
         for f in features:
@@ -96,7 +96,7 @@ class Simhash(object):
     build_by_features = update
     build_by_text = update
 
-    def finalize(self):
+    def _finalize(self):
         if self.buffer:
             # Flush and clear the buffer.
             self.update([self.buffer])
@@ -118,7 +118,7 @@ class Simhash(object):
     @property
     def value(self):
         if self.hash is None:
-            self.finalize()
+            self._finalize()
         return self.hash
 
     def digest(self):
