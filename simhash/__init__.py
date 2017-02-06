@@ -6,6 +6,7 @@ import re
 import hashlib
 import logging
 import collections
+import jieba.analyse
 from itertools import groupby
 
 if sys.version_info[0] >= 3:
@@ -47,7 +48,10 @@ class Simhash(object):
         if isinstance(value, Simhash):
             self.value = value.value
         elif isinstance(value, basestring):
-            self.build_by_text(unicode(value))
+            if re.match('[\u4e00 -\u9fa5]+',value)==None:#for chindese
+                self.build_by_chineseText(value)
+            else:
+                self.build_by_text(unicode(value))
         elif isinstance(value, collections.Iterable):
             self.build_by_features(value)
         elif isinstance(value, long):
@@ -69,6 +73,21 @@ class Simhash(object):
         features = {k:sum(1 for _ in g) for k, g in groupby(sorted(features))}
         return self.build_by_features(features)
 
+    def removeWebTag(self,content):#for remove web tag
+        content = content.replace("&quot;", "\"").replace("&amp;", "&").replace("&lt;", "<")
+        content = content.replace("&gt;", ">").replace("&nbsp;", " ").replace("&quot", "\"")
+        content = content.replace("&amp", "&").replace("&lt", "<").replace("&gt", ">")
+        content = content.replace("&nbsp", " ").replace("quot;", "\"").replace("amp;", "&")
+        content = content.replace("lt;", "<").replace("gt;", ">").replace("nbsp;", " ")
+        content = content.replace("quot", "\"").replace("amp", "&").replace("lt", "<")
+        content = content.replace("gt", ">").replace("nbsp", " ")
+        return content
+
+    def build_by_chineseText(self,content): #for chinese, choice 100 words according tfidf
+        content = self.removeWebTag(content)
+        features = jieba.analyse.extract_tags(content,100,True)
+        return self.build_by_features(features)
+    
     def build_by_features(self, features):
         """
         `features` might be a list of unweighted tokens (a weight of 1
