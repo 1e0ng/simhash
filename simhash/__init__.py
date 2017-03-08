@@ -1,6 +1,7 @@
 # Created by 1e0n in 2013
 from __future__ import division, unicode_literals
 
+import shelve
 import sys
 import re
 import hashlib
@@ -192,3 +193,22 @@ class SimhashIndex(object):
 
     def bucket_size(self):
         return len(self.bucket)
+
+
+def index_save(path, simhash_index):
+    """
+    save the SimhashIndex object into path
+    """
+    d = shelve.open(path)
+    d['simhash'] = simhash_index
+    d.close()
+
+
+def index_open(path):
+    """
+    open the pre-calculate SimhashIndex index
+    """
+    d = shelve.open(path)
+    simhash_index = d['simhash']
+    d.close()
+    return simhash_index
