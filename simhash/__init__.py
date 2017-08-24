@@ -91,7 +91,7 @@ class Simhash(object):
                 v[i] += w if h & masks[i] else -w
         ans = 0
         for i in range(self.f):
-            if v[i] >= 0:
+            if v[i] > 0:
                 ans |= masks[i]
         self.value = ans
 
