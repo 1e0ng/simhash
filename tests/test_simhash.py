@@ -3,11 +3,12 @@ from unittest import main, TestCase
 
 from simhash import Simhash, SimhashIndex
 
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 class TestSimhash(TestCase):
 
     def test_value(self):
-        self.assertEqual(Simhash(['aaa', 'bbb']).value, 8637903533912358349)
+        self.assertEqual(Simhash(['aaa', 'bbb']).value, 57087923692560392)
 
     def test_distance(self):
         sh = Simhash('How are you? I AM fine. Thanks. And you?')
@@ -43,11 +44,6 @@ class TestSimhash(TestCase):
                     self.assertNotEqual(sh1, sh2)
 
     def test_sparse_features(self):
-        # only test if sklearn is present
-        try:
-            from sklearn.feature_extraction.text import TfidfVectorizer
-        except ImportError:
-            return
         data = [
             'How are you? I Am fine. blar blar blar blar blar Thanks.',
             'How are you i am fine. blar blar blar blar blar than',
