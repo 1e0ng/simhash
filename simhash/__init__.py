@@ -66,7 +66,7 @@ class Simhash(object):
 
     def build_by_text(self, content):
         features = self._tokenize(content)
-        features = {k:sum(1 for _ in g) for k, g in groupby(sorted(features))}
+        features = {k:len(list(g)) for k, g in groupby(sorted(features))}
         return self.build_by_features(features)
 
     def build_by_features(self, features):
@@ -79,14 +79,12 @@ class Simhash(object):
         masks = [1 << i for i in range(self.f)]
         if isinstance(features, dict):
             features = features.items()
-        for f in features:
-            if isinstance(f, basestring):
-                h = self.hashfunc(f.encode('utf-8'))
-                w = 1
-            else:
-                assert isinstance(f, collections.Iterable)
-                h = self.hashfunc(f[0].encode('utf-8'))
-                w = f[1]
+
+        elif isinstance(features[0], basestring):
+            features = [(f, 1) for f in features]
+
+        for f, w in features:
+            h = self.hashfunc(f.encode('utf-8'))
             for i in range(self.f):
                 v[i] += w if h & masks[i] else -w
         ans = 0
