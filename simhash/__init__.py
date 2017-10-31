@@ -114,7 +114,7 @@ class Simhash(object):
 
 class SimhashIndex(object):
 
-    def __init__(self, objs, f=64, k=2):
+    def __init__(self, objs, f=64, k=2, log=None):
         """
         `objs` is a list of (obj_id, simhash)
         obj_id is a string, simhash is an instance of Simhash
@@ -124,6 +124,12 @@ class SimhashIndex(object):
         self.k = k
         self.f = f
         count = len(objs)
+
+        if log is None:
+            self.log = logging.getLogger("simhash")
+        else:
+            self.log = log
+
         self.log.info('Initializing %s data.', count)
 
         self.bucket = collections.defaultdict(set)
