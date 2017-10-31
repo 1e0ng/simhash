@@ -22,7 +22,9 @@ def _hashfunc(x):
 
 class Simhash(object):
 
-    def __init__(self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None):
+    def __init__(
+        self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None, log=None
+    ):
         """
         `f` is the dimensions of fingerprints
 
@@ -43,6 +45,11 @@ class Simhash(object):
             self.hashfunc = _hashfunc
         else:
             self.hashfunc = hashfunc
+
+        if log is None:
+            self.log = logging.getLogger("simhash")
+        else:
+            self.log = log
 
         if isinstance(value, Simhash):
             self.value = value.value
@@ -117,13 +124,13 @@ class SimhashIndex(object):
         self.k = k
         self.f = f
         count = len(objs)
-        logging.info('Initializing %s data.', count)
+        self.log.info('Initializing %s data.', count)
 
         self.bucket = collections.defaultdict(set)
 
         for i, q in enumerate(objs):
             if i % 10000 == 0 or i == count - 1:
-                logging.info('%s/%s', i + 1, count)
+                self.log.info('%s/%s', i + 1, count)
 
             self.add(*q)
 
@@ -138,9 +145,9 @@ class SimhashIndex(object):
 
         for key in self.get_keys(simhash):
             dups = self.bucket[key]
-            logging.debug('key:%s', key)
+            self.log.debug('key:%s', key)
             if len(dups) > 200:
-                logging.warning('Big bucket found. key:%s, len:%s', key, len(dups))
+                self.log.warning('Big bucket found. key:%s, len:%s', key, len(dups))
 
             for dup in dups:
                 sim2, obj_id = dup.split(',', 1)
