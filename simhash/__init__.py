@@ -1,10 +1,11 @@
 # Created by 1e0n in 2013
 from __future__ import division, unicode_literals
 
-import sys
 import re
+import sys
 import hashlib
 import logging
+import numbers
 import collections
 from itertools import groupby
 
@@ -57,7 +58,7 @@ class Simhash(object):
             self.build_by_text(unicode(value))
         elif isinstance(value, collections.Iterable):
             self.build_by_features(value)
-        elif isinstance(value, long):
+        elif isinstance(value, numbers.Integral):
             self.value = value
         else:
             raise Exception('Bad parameter with type {}'.format(type(value)))
