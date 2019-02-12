@@ -87,10 +87,8 @@ class TestSimhash(TestCase):
         b = Simhash('My name is John')
         c = Simhash('My name actually is Jane')
 
-        with self.subTest('A should equal B'):
-            self.assertEqual(a, b)
-        with self.subTest('A should not equal C'):
-            self.assertNotEqual(a, c)
+        self.assertEqual(a, b, 'A should equal B')
+        self.assertNotEqual(a, c, 'A should not equal C')
 
 
 class TestSimhashIndex(TestCase):
