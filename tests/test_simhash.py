@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from unittest import main, TestCase
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+
 from simhash import Simhash, SimhashIndex
 
-from sklearn.feature_extraction.text import TfidfVectorizer
 
 class TestSimhash(TestCase):
 
@@ -80,6 +81,16 @@ class TestSimhash(TestCase):
         # different results
         self.assertNotEqual(Simhash(dict_features).value,
                             Simhash(data[0]).value)
+
+    def test_equality_comparison(self):
+        a = Simhash('My name is John')
+        b = Simhash('My name is John')
+        c = Simhash('My name actually is Jane')
+
+        with self.subTest('A should equal B'):
+            self.assertEqual(a, b)
+        with self.subTest('A should not equal C'):
+            self.assertNotEqual(a, c)
 
 
 class TestSimhashIndex(TestCase):
