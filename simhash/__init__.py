@@ -63,6 +63,14 @@ class Simhash(object):
         else:
             raise Exception('Bad parameter with type {}'.format(type(value)))
 
+    def __eq__(self, other):
+        """
+        Compare two simhashes by their value.
+
+        :param Simhash other: The Simhash object to compare to
+        """
+        return self.value == other.value
+
     def _slide(self, content, width=4):
         return [content[i:i + width] for i in range(max(len(content) - width + 1, 1))]
 
