@@ -22,6 +22,7 @@ setup(
         'numpy',
         'scipy',
         'scikit-learn',
+        'gmpy2'
         ],
     test_suite = "nose.collector",
 )

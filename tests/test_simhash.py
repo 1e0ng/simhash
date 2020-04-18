@@ -14,7 +14,7 @@ class TestSimhash(TestCase):
         self.assertEqual(Simhash(9223372036854775808).value, 9223372036854775808)
 
     def test_value(self):
-        self.assertEqual(Simhash(['aaa', 'bbb']).value, 57087923692560392)
+        self.assertEqual(Simhash(['aaa', 'bbb']).value, 1154915058045375232)
 
     def test_distance(self):
         sh = Simhash('How are you? I AM fine. Thanks. And you?')
@@ -75,7 +75,7 @@ class TestSimhash(TestCase):
         # features as token -> weight dicts
         D0 = D.getrow(0)
         dict_features = dict(zip([voc[j] for j in D0.indices], D0.data))
-        self.assertEqual(Simhash(dict_features).value, 17583409636488780916)
+        self.assertEqual(Simhash(dict_features).value, 3330439218547335215)
 
         # the sparse and non-sparse features should obviously yield
         # different results
