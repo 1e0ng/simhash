@@ -107,8 +107,11 @@ class Simhash(object):
                 w = f[1]
             for i in range(self.f):
                 v[i] += w if h & masks[i] else -w
-        binary_str = ''.join(['0' if i <= 0 else '1' for i in v])
-        self.value = int(binary_str, 2)
+        ans = 0
+        for i in range(self.f):
+            if v[i] > 0:
+                ans |= masks[i]
+        self.value = ans
 
     def distance(self, another):
         assert self.f == another.f
