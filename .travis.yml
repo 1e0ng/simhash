@@ -17,8 +17,9 @@ before_install:
   - conda update -q conda
 
 install:
-  - conda create --yes -q -n pyenv python=$TRAVIS_PYTHON_VERSION -c conda-forge pip numpy scipy scikit-learn nose pyyaml gmpy2
+  - conda create --yes -q -n pyenv python=$TRAVIS_PYTHON_VERSION -c conda-forge
   - source activate pyenv
+  - conda install --yes pip numpy scipy scikit-learn nose pyyaml gmpy2
 
 script:
   - nosetests
