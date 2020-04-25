@@ -1,13 +1,15 @@
 # Created by 1e0n in 2013
 from __future__ import division, unicode_literals
 
-import re
-import sys
+import collections
 import hashlib
 import logging
 import numbers
-import collections
+import re
+import sys
 from itertools import groupby
+
+from gmpy2 import popcount
 
 if sys.version_info[0] >= 3:
     basestring = str
@@ -82,7 +84,7 @@ class Simhash(object):
 
     def build_by_text(self, content):
         features = self._tokenize(content)
-        features = {k:sum(1 for _ in g) for k, g in groupby(sorted(features))}
+        features = {k: sum(1 for _ in g) for k, g in groupby(sorted(features))}
         return self.build_by_features(features)
 
     def build_by_features(self, features):
@@ -113,12 +115,7 @@ class Simhash(object):
 
     def distance(self, another):
         assert self.f == another.f
-        x = (self.value ^ another.value) & ((1 << self.f) - 1)
-        ans = 0
-        while x:
-            ans += 1
-            x &= x - 1
-        return ans
+        return popcount(self.value ^ another.value)
 
 
 class SimhashIndex(object):

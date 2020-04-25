@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'simhash',
-    version = '1.9.1',
+    version = '1.10',
     keywords = ('simhash'),
     description = 'A Python implementation of Simhash Algorithm',
     license = 'MIT License',
@@ -16,7 +16,7 @@ setup(
     packages = find_packages(),
     include_package_data = True,
     platforms = 'any',
-    install_requires = [],
+    install_requires = ['gmpy2'],
     tests_require = [
         'nose',
         'numpy',
