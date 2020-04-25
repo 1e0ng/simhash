@@ -26,7 +26,7 @@ def _hashfunc(x):
 class Simhash(object):
 
     def __init__(
-        self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None, log=None
+            self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None, log=None
     ):
         """
         `f` is the dimensions of fingerprints
@@ -107,11 +107,9 @@ class Simhash(object):
                 w = f[1]
             for i in range(self.f):
                 v[i] += w if h & masks[i] else -w
-        ans = 0
-        for i in range(self.f):
-            if v[i] > 0:
-                ans |= masks[i]
-        self.value = ans
+        # use reversed binary str to keep the backward compatibility
+        binary_str = ''.join(['0' if i <= 0 else '1' for i in v[::-1]])
+        self.value = int(binary_str, 2)
 
     def distance(self, another):
         assert self.f == another.f
