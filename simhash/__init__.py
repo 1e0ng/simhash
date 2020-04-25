@@ -107,7 +107,8 @@ class Simhash(object):
                 w = f[1]
             for i in range(self.f):
                 v[i] += w if h & masks[i] else -w
-        binary_str = ''.join(['0' if i <= 0 else '1' for i in v])
+        # use reversed binary str to keep the backward compatibility
+        binary_str = ''.join(['0' if i <= 0 else '1' for i in v[::-1]])
         self.value = int(binary_str, 2)
 
     def distance(self, another):
