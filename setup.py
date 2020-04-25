@@ -16,13 +16,12 @@ setup(
     packages = find_packages(),
     include_package_data = True,
     platforms = 'any',
-    install_requires = [],
+    install_requires = ['gmpy2'],
     tests_require = [
         'nose',
         'numpy',
         'scipy',
         'scikit-learn',
-        'gmpy2'
         ],
     test_suite = "nose.collector",
 )
