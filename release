@@ -1,0 +1,4 @@
+python3 setup.py bdist_egg bdist_wheel sdist
+python3 setup.py bdist_egg bdist_wheel sdist upload
+python2 setup.py bdist_egg bdist_wheel
+python2 setup.py bdist_egg bdist_wheel upload
