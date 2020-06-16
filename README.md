@@ -1,7 +1,7 @@
 simhash
 ===========
 
-This is a Python implementation of [Simhash](http://www.wwwconference.org/www2007/papers/paper215.pdf).
+This is a Python implementation of [Simhash](http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/33026.pdf).
 
 ## Getting Started
 
