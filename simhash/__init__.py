@@ -197,7 +197,7 @@ class SimhashIndex(object):
     @property
     def offsets(self):
         """
-        You may optimize this method according to <http://www.wwwconference.org/www2007/papers/paper215.pdf>
+        You may optimize this method according to <http://static.googleusercontent.com/media/research.google.com/en//pubs/archive/33026.pdf>
         """
         return [self.f // (self.k + 1) * i for i in range(self.k + 1)]
 
