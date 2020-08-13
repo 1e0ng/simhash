@@ -92,7 +92,8 @@ class Simhash(object):
                    a token -> weight dict.
         """
         v = [0] * self.f
-        masks = [1 << i for i in range(self.f)]
+        truncate_mask = 2**self.f - 1
+        bitstring_format = '0{}b'.format(self.f)
         if isinstance(features, dict):
             features = features.items()
         for f in features:
@@ -103,10 +104,11 @@ class Simhash(object):
                 assert isinstance(f, collections.Iterable)
                 h = self.hashfunc(f[0].encode('utf-8'))
                 w = f[1]
-            for i in range(self.f):
-                v[i] += w if h & masks[i] else -w
-        # use reversed binary str to keep the backward compatibility
-        binary_str = ''.join(['0' if i <= 0 else '1' for i in v[::-1]])
+            # Updating v is the slow part of build_by_features().
+            # Consider profiling before changing this code:
+            h_bits = format(h & truncate_mask, bitstring_format)
+            v = [x + (w if bit == "1" else -w) for bit, x in zip(h_bits, v)]
+        binary_str = ''.join('0' if i <= 0 else '1' for i in v)
         self.value = int(binary_str, 2)
 
     def distance(self, another):
