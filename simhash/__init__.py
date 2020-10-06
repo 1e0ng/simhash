@@ -8,44 +8,59 @@ import logging
 import numbers
 import collections
 from itertools import groupby
+import numpy as np
 
 if sys.version_info[0] >= 3:
     basestring = str
     unicode = str
     long = int
+
+    def int_to_bytes(n, length):
+        return n.to_bytes(length, 'big')
+
+    def bytes_to_int(b):
+        return int.from_bytes(b, 'big')
 else:
     range = xrange
 
+    def int_to_bytes(n, length):
+        return '{:0{}x}'.format(n, length * 2).decode('hex')
+
+    def bytes_to_int(b):
+        return int(b.encode('hex'), 16)
 
 def _hashfunc(x):
-    return int(hashlib.md5(x).hexdigest(), 16)
+    return hashlib.md5(x).digest()
 
 
 class Simhash(object):
+    # Constants used in calculating simhash. Larger values will use more RAM.
+    large_weight_cutoff = 50
+    batch_size = 200
 
     def __init__(
-            self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=None, log=None
+            self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=_hashfunc, log=None
     ):
         """
-        `f` is the dimensions of fingerprints
+        `f` is the dimensions of fingerprints, in bits. Must be a multiple of 8.
 
         `reg` is meaningful only when `value` is basestring and describes
         what is considered to be a letter inside parsed string. Regexp
         object can also be specified (some attempt to handle any letters
         is to specify reg=re.compile(r'\w', re.UNICODE))
 
-        `hashfunc` accepts a utf-8 encoded string and returns a unsigned
-        integer in at least `f` bits.
+        `hashfunc` accepts a utf-8 encoded string and returns either bytes
+        (preferred) or an unsigned integer, in at least `f // 8` bytes.
         """
+        if f % 8:
+            raise ValueError('f must be a multiple of 8')
 
         self.f = f
+        self.f_bytes = f // 8
         self.reg = reg
         self.value = None
-
-        if hashfunc is None:
-            self.hashfunc = _hashfunc
-        else:
-            self.hashfunc = hashfunc
+        self.hashfunc = hashfunc
+        self.hashfunc_returns_int = isinstance(hashfunc(b"test"), numbers.Integral)
 
         if log is None:
             self.log = logging.getLogger("simhash")
@@ -91,25 +106,51 @@ class Simhash(object):
                    will be assumed), a list of (token, weight) tuples or
                    a token -> weight dict.
         """
-        v = [0] * self.f
-        truncate_mask = 2**self.f - 1
-        bitstring_format = '0{}b'.format(self.f)
+        sums = []
+        batch = []
+        count = 0
+        w = 1
+        truncate_mask = 2 ** self.f - 1
         if isinstance(features, dict):
             features = features.items()
+
         for f in features:
-            if isinstance(f, basestring):
-                h = self.hashfunc(f.encode('utf-8'))
-                w = 1
+            skip_batch = False
+            if not isinstance(f, basestring):
+                f, w = f
+                skip_batch = w > self.large_weight_cutoff or not isinstance(w, int)
+
+            count += w
+            if self.hashfunc_returns_int:
+                h = int_to_bytes(self.hashfunc(f.encode('utf-8')) & truncate_mask, self.f_bytes)
             else:
-                assert isinstance(f, collections.Iterable)
-                h = self.hashfunc(f[0].encode('utf-8'))
-                w = f[1]
-            # Updating v is the slow part of build_by_features().
-            # Consider profiling before changing this code:
-            h_bits = format(h & truncate_mask, bitstring_format)
-            v = [x + (w if bit == "1" else -w) for bit, x in zip(h_bits, v)]
-        binary_str = ''.join('0' if i <= 0 else '1' for i in v)
-        self.value = int(binary_str, 2)
+                h = self.hashfunc(f.encode('utf-8'))[-self.f_bytes:]
+
+            if skip_batch:
+                sums.append(self._bitarray_from_bytes(h) * w)
+            else:
+                batch.append(h * w)
+                if len(batch) >= self.batch_size:
+                    sums.append(self._sum_hashes(batch))
+                    batch = []
+
+            if len(sums) >= self.batch_size:
+                sums = [np.sum(sums, 0)]
+
+        if batch:
+            sums.append(self._sum_hashes(batch))
+
+        combined_sums = np.sum(sums, 0)
+        self.value = bytes_to_int(np.packbits(combined_sums > count / 2).tobytes())
+
+    def _sum_hashes(self, digests):
+        bitarray = self._bitarray_from_bytes(b''.join(digests))
+        rows = np.reshape(bitarray, (-1, self.f))
+        return np.sum(rows, 0)
+
+    @staticmethod
+    def _bitarray_from_bytes(b):
+        return np.unpackbits(np.frombuffer(b, dtype='>B'))
 
     def distance(self, another):
         assert self.f == another.f
