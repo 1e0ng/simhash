@@ -1,13 +1,14 @@
 # Created by 1e0n in 2013
 from __future__ import division, unicode_literals
 
-import re
-import sys
+import collections
 import hashlib
 import logging
 import numbers
-import collections
+import re
+import sys
 from itertools import groupby
+
 import numpy as np
 
 if sys.version_info[0] >= 3:

@@ -109,8 +109,8 @@ class TestSimhash(TestCase):
         """ Test code paths for dealing with feature lists larger than batch_size, and weights larger than large_weight_cutoff. """
         many_features = [str(i) for i in range(int(Simhash.batch_size * 2.5))]
         many_features_large_weights = [(f, Simhash.large_weight_cutoff * i) for i, f in enumerate(many_features)]
-        self.assertEqual(Simhash(many_features).value, 7984652473404407437)
-        self.assertEqual(Simhash(many_features_large_weights).value, 3372825719632739723)
+        self.assertEqual(7984652473404407437, Simhash(many_features).value)
+        self.assertEqual(3372825719632739723, Simhash(many_features_large_weights).value)
 
 
 class TestSimhashIndex(TestCase):
