@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import hashlib
 from unittest import main, TestCase
 
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -89,6 +90,27 @@ class TestSimhash(TestCase):
 
         self.assertEqual(a, b, 'A should equal B')
         self.assertNotEqual(a, c, 'A should not equal C')
+
+    def test_custom_hashfunc(self):
+        def int_hashfunc(x):
+            return int(hashlib.md5(x).hexdigest(), 16)
+
+        def sha_hashfunc(x):
+            return hashlib.sha256(x).digest()
+
+        a = Simhash('My name is John')
+        b = Simhash('My name is John', hashfunc=int_hashfunc)
+        c = Simhash('My name is John', hashfunc=sha_hashfunc)
+
+        self.assertEqual(a, b, 'hashfunc returning int should have the same output as default hashfunc returning bytes')
+        self.assertNotEqual(a, c, 'custom hashfunc should return different result from default hashfunc')
+
+    def test_large_inputs(self):
+        """ Test code paths for dealing with feature lists larger than batch_size, and weights larger than large_weight_cutoff. """
+        many_features = [str(i) for i in range(int(Simhash.batch_size * 2.5))]
+        many_features_large_weights = [(f, Simhash.large_weight_cutoff * i) for i, f in enumerate(many_features)]
+        self.assertEqual(Simhash(many_features).value, 7984652473404407437)
+        self.assertEqual(Simhash(many_features_large_weights).value, 3372825719632739723)
 
 
 class TestSimhashIndex(TestCase):
