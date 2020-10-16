@@ -9,12 +9,12 @@ from simhash import Simhash, SimhashIndex
 class TestSimhash(TestCase):
 
     def test_int_value(self):
-        self.assertEqual(Simhash(0).value, 0)
-        self.assertEqual(Simhash(4390059585430954713).value, 4390059585430954713)
-        self.assertEqual(Simhash(9223372036854775808).value, 9223372036854775808)
+        self.assertEqual(0, Simhash(0).value)
+        self.assertEqual(4390059585430954713, Simhash(4390059585430954713).value)
+        self.assertEqual(9223372036854775808, Simhash(9223372036854775808).value)
 
     def test_value(self):
-        self.assertEqual(Simhash(['aaa', 'bbb']).value, 57087923692560392)
+        self.assertEqual(57087923692560392, Simhash(['aaa', 'bbb']).value)
 
     def test_distance(self):
         sh = Simhash('How are you? I AM fine. Thanks. And you?')
@@ -22,9 +22,9 @@ class TestSimhash(TestCase):
         self.assertTrue(sh.distance(sh2) > 0)
 
         sh3 = Simhash(sh2)
-        self.assertEqual(sh2.distance(sh3), 0)
+        self.assertEqual(0, sh2.distance(sh3))
 
-        self.assertNotEqual(Simhash('1').distance(Simhash('2')), 0)
+        self.assertNotEqual(0, Simhash('1').distance(Simhash('2')))
 
     def test_chinese(self):
         self.maxDiff = None
@@ -36,7 +36,7 @@ class TestSimhash(TestCase):
         sh5 = Simhash(u'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar than')
         sh6 = Simhash(u'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank')
 
-        self.assertEqual(sh1.distance(sh2), 0)
+        self.assertEqual(0, sh1.distance(sh2))
 
         self.assertTrue(sh4.distance(sh6) < 3)
         self.assertTrue(sh5.distance(sh6) < 3)
@@ -68,14 +68,14 @@ class TestSimhash(TestCase):
             # features as list of (token, weight) tuples)
             features = zip([voc[j] for j in Di.indices], Di.data)
             shs.append(Simhash(features))
-        self.assertNotEqual(shs[0].distance(shs[1]), 0)
-        self.assertNotEqual(shs[2].distance(shs[3]), 0)
+        self.assertNotEqual(0, shs[0].distance(shs[1]))
+        self.assertNotEqual(0, shs[2].distance(shs[3]))
         self.assertLess(shs[0].distance(shs[1]), shs[2].distance(shs[3]))
 
         # features as token -> weight dicts
         D0 = D.getrow(0)
         dict_features = dict(zip([voc[j] for j in D0.indices], D0.data))
-        self.assertEqual(Simhash(dict_features).value, 17583409636488780916)
+        self.assertEqual(17583409636488780916, Simhash(dict_features).value)
 
         # the sparse and non-sparse features should obviously yield
         # different results
@@ -106,23 +106,23 @@ class TestSimhashIndex(TestCase):
     def test_get_near_dup(self):
         s1 = Simhash(u'How are you i am fine.ablar ablar xyz blar blar blar blar blar blar blar thank')
         dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 3)
+        self.assertEqual(3, len(dups))
 
         self.index.delete('1', Simhash(self.data[1]))
         dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 2)
+        self.assertEqual(2, len(dups))
 
         self.index.delete('1', Simhash(self.data[1]))
         dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 2)
+        self.assertEqual(2, len(dups))
 
         self.index.add('1', Simhash(self.data[1]))
         dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 3)
+        self.assertEqual(3, len(dups))
 
         self.index.add('1', Simhash(self.data[1]))
         dups = self.index.get_near_dups(s1)
-        self.assertEqual(len(dups), 3)
+        self.assertEqual(3, len(dups))
 
 
 if __name__ == '__main__':
