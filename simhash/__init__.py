@@ -40,7 +40,7 @@ class Simhash(object):
     batch_size = 200
 
     def __init__(
-            self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=_hashfunc, log=None
+            self, value, f=64, reg=r'[\w\u4e00-\u9fcc]+', hashfunc=_hashfunc, log=None, concatenate = False
     ):
         """
         `f` is the dimensions of fingerprints, in bits. Must be a multiple of 8.
@@ -52,6 +52,8 @@ class Simhash(object):
 
         `hashfunc` accepts a utf-8 encoded string and returns either bytes
         (preferred) or an unsigned integer, in at least `f // 8` bytes.
+        
+        `concatenate` indicates if the simhash is a concatenation of simhashes provided in the value argument
         """
         if f % 8:
             raise ValueError('f must be a multiple of 8')
@@ -62,22 +64,29 @@ class Simhash(object):
         self.value = None
         self.hashfunc = hashfunc
         self.hashfunc_returns_int = isinstance(hashfunc(b"test"), numbers.Integral)
+        self.concatenate = concatenate
 
         if log is None:
             self.log = logging.getLogger("simhash")
         else:
             self.log = log
-
-        if isinstance(value, Simhash):
-            self.value = value.value
-        elif isinstance(value, basestring):
-            self.build_by_text(unicode(value))
-        elif isinstance(value, collections.Iterable):
-            self.build_by_features(value)
-        elif isinstance(value, numbers.Integral):
-            self.value = value
+        
+        if not concatenate:
+            if isinstance(value, Simhash):
+                self.value = value.value
+            elif isinstance(value, basestring):
+                self.build_by_text(unicode(value))
+            elif isinstance(value, collections.Iterable):
+                self.build_by_features(value)
+            elif isinstance(value, numbers.Integral):
+                self.value = value
+            else:
+                raise Exception('Bad parameter with type {}'.format(type(value)))
         else:
-            raise Exception('Bad parameter with type {}'.format(type(value)))
+            if isinstance(value, collections.Iterable):
+                self.concatenate_simhashes(value)
+            else:
+                raise Exception('Bad parameter with type {}'.format(type(value)))
 
     def __eq__(self, other):
         """
@@ -100,7 +109,11 @@ class Simhash(object):
         features = self._tokenize(content)
         features = {k:sum(1 for _ in g) for k, g in groupby(sorted(features))}
         return self.build_by_features(features)
-
+        
+    def concatenate_simhashes(self, objs):
+        digests = [int_to_bytes(obj.value, obj.f_bytes) for obj in objs]
+        self.value = bytes_to_int(b''.join(digests))
+        
     def build_by_features(self, features):
         """
         `features` might be a list of unweighted tokens (a weight of 1
