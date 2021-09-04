@@ -111,7 +111,15 @@ class TestSimhash(TestCase):
         many_features_large_weights = [(f, Simhash.large_weight_cutoff * i) for i, f in enumerate(many_features)]
         self.assertEqual(7984652473404407437, Simhash(many_features).value)
         self.assertEqual(3372825719632739723, Simhash(many_features_large_weights).value)
-
+        
+    def test_simhash_concatenation(self):
+        a = Simhash(0xaaaaaaaa, f=32)
+        b = Simhash(0xbbbbbbbb, f=32)
+        c = a.concatenate([b])
+        d = Simhash(0xaaaaaaaabbbbbbbb, f=64)
+        self.assertEqual(c.value,d.value)
+        with self.assertRaises(Exception) as e:
+            a.concatenate(b)
 
 class TestSimhashIndex(TestCase):
     data = {
