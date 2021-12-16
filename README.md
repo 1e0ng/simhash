@@ -10,3 +10,4 @@ This is a Python implementation of [Simhash](http://static.googleusercontent.com
 ## Build Status
 
 [![Build Status](https://travis-ci.org/1e0ng/simhash.png?branch=master)](https://travis-ci.org/1e0ng/simhash)
+![Build Status](https://github.com/github/1e0ng/simhash/actions/workflows/main.yml/badge.svg?branch=master)
