@@ -72,7 +72,7 @@ class Simhash(object):
             self.value = value.value
         elif isinstance(value, basestring):
             self.build_by_text(unicode(value))
-        elif isinstance(value, collections.Iterable):
+        elif isinstance(value, collections.abc.Iterable):
             self.build_by_features(value)
         elif isinstance(value, numbers.Integral):
             self.value = value
