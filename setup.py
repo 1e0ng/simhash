@@ -20,9 +20,9 @@ setup(
         'numpy',
     ],
     tests_require = [
-        'nose',
+        'nose2',
         'scipy',
         'scikit-learn',
         ],
-    test_suite = "nose.collector",
+    test_suite="tests",
 )
