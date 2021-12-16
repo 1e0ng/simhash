@@ -9,4 +9,4 @@ This is a Python implementation of [Simhash](http://static.googleusercontent.com
 
 ## Build Status
 
-![Build Status](https://github.com/github/1e0ng/simhash/actions/workflows/main.yml/badge.svg?branch=master)
+![Build Status](https://github.com/1e0ng/simhash/actions/workflows/main.yml/badge.svg?branch=master)
