@@ -11,6 +11,11 @@ from itertools import groupby
 
 import numpy as np
 
+try:
+    from collections.abc import Iterable
+except ImportError:
+    from collections import Iterable
+
 if sys.version_info[0] >= 3:
     basestring = str
     unicode = str
@@ -72,7 +77,7 @@ class Simhash(object):
             self.value = value.value
         elif isinstance(value, basestring):
             self.build_by_text(unicode(value))
-        elif isinstance(value, collections.Iterable):
+        elif isinstance(value, Iterable):
             self.build_by_features(value)
         elif isinstance(value, numbers.Integral):
             self.value = value
