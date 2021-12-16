@@ -11,6 +11,11 @@ from itertools import groupby
 
 import numpy as np
 
+try:
+    collections_abc = collections.abc
+except AttributeError:
+    collections_abc = collections
+
 if sys.version_info[0] >= 3:
     basestring = str
     unicode = str
