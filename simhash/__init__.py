@@ -13,7 +13,7 @@ import numpy as np
 
 try:
     from collections.abc import Iterable
-except AttributeError:
+except ImportError:
     from collections import Iterable
 
 if sys.version_info[0] >= 3:
