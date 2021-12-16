@@ -12,9 +12,9 @@ from itertools import groupby
 import numpy as np
 
 try:
-    collections_abc = collections.abc
+    from collections.abc import Iterable
 except AttributeError:
-    collections_abc = collections
+    from collections import Iterable
 
 if sys.version_info[0] >= 3:
     basestring = str
@@ -77,7 +77,7 @@ class Simhash(object):
             self.value = value.value
         elif isinstance(value, basestring):
             self.build_by_text(unicode(value))
-        elif isinstance(value, collections_abc.Iterable):
+        elif isinstance(value, Iterable):
             self.build_by_features(value)
         elif isinstance(value, numbers.Integral):
             self.value = value
