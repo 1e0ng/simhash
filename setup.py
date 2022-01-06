@@ -18,6 +18,7 @@ setup(
     platforms = 'any',
     install_requires = [
         'numpy',
+        'gmpy2',
     ],
     tests_require = [
         'nose2',

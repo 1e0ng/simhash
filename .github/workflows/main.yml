@@ -18,6 +18,6 @@ jobs:
         python-version: ${{ matrix.python }}
     - name: Install dependencies
       run: |
-        pip install nose2 numpy scipy scikit-learn
+        pip install nose2 numpy scipy scikit-learn gmpy2
     - name: Run tests
       run: nose2 -v --pretty-assert

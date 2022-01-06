@@ -10,6 +10,7 @@ import sys
 from itertools import groupby
 
 import numpy as np
+from gmpy2 import popcount
 
 try:
     from collections.abc import Iterable
@@ -160,12 +161,7 @@ class Simhash(object):
 
     def distance(self, another):
         assert self.f == another.f
-        x = (self.value ^ another.value) & ((1 << self.f) - 1)
-        ans = 0
-        while x:
-            ans += 1
-            x &= x - 1
-        return ans
+        return popcount(self.value ^ another.value)
 
 
 class SimhashIndex(object):
