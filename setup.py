@@ -10,7 +10,7 @@ setup(
     license = 'MIT License',
 
     url = 'http://leons.im/posts/a-python-implementation-of-simhash-algorithm/',
-    project_urls={
+    project_urls = {
         'Source': 'https://github.com/1e0ng/simhash',
     },
     author = '1e0n',
