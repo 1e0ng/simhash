@@ -171,7 +171,7 @@ class Simhash(object):
 class MultiSimhash(Simhash):
     def __init__(self, simhashes):
         multi_f = 0
-        if not isinstance(simhashes, collections.Iterable):
+        if not isinstance(simhashes, Iterable):
             raise Exception('Value passed is not a list of simhashes')
         for i in simhashes:
             multi_f = multi_f + i.f
