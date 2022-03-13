@@ -4,7 +4,7 @@ from unittest import main, TestCase
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from simhash import Simhash, SimhashIndex
+from simhash import MultiSimhash, Simhash, SimhashIndex
 
 
 class TestSimhash(TestCase):
@@ -146,6 +146,19 @@ class TestSimhashIndex(TestCase):
         dups = self.index.get_near_dups(s1)
         self.assertEqual(3, len(dups))
 
+class TestMultiSimhash(TestCase):
+    def test_creation(self):
+        a = Simhash('My name is John')
+        b = 1
+        self.assertRaises(Exception, [a, b])
+
+        a = Simhash(0xaaaaaaaa, f=32)
+        b = Simhash(0xbbbbbbbb, f=32)
+        ms = MultiSimhash([a, b])
+        d = Simhash(0xaaaaaaaabbbbbbbb, f=64)
+        self.assertEqual(ms.value, d.value)
+
+        self.assertEqual(ms.f, d.f)
 
 if __name__ == '__main__':
     main()

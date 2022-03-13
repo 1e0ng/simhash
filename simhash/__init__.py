@@ -168,6 +168,22 @@ class Simhash(object):
         return ans
 
 
+class MultiSimhash(Simhash):
+    def __init__(self, simhashes):
+        multi_f = 0
+        if not isinstance(simhashes, Iterable):
+            raise Exception('Value passed is not a list of simhashes')
+        for i in simhashes:
+            multi_f = multi_f + i.f
+        if multi_f % 8:
+            raise Exception('Simhashes do not the same length (f)')
+        multi_value = self._concatenate_simhashes(simhashes)
+        super(MultiSimhash, self).__init__(value=multi_value, f=multi_f, hashfunc=simhashes[0].hashfunc)
+    
+    def _concatenate_simhashes(self, objs):
+        digests = [int_to_bytes(obj.value, obj.f_bytes) for obj in objs]
+        return bytes_to_int(b''.join(digests))
+
 class SimhashIndex(object):
 
     def __init__(self, objs, f=64, k=2, log=None):
