@@ -4,7 +4,7 @@ from unittest import main, TestCase
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 
-from simhash import Simhash, SimhashIndex
+from simhash import Simhash, SimhashIndex, determine_clusters
 
 
 class TestSimhash(TestCase):
@@ -145,6 +145,34 @@ class TestSimhashIndex(TestCase):
         self.index.add('1', Simhash(self.data[1]))
         dups = self.index.get_near_dups(s1)
         self.assertEqual(3, len(dups))
+
+
+class TestDetermineClusters(TestCase):
+    data = {
+        1: 'How are you? I Am fine. blar blar blar blar blar Thanks.',
+        2: 'How are you? I Am fine. blar blar blar blar blar Thanks.',
+        3: 'This is simhash test.',
+        4: 'How are you i am fine. blar blar blar blar blar thank1',
+    }
+
+    def setUp(self):
+        self.objs = [(str(k), Simhash(v)) for k, v in self.data.items()]
+
+    def test_exact_match_same_cluster(self):
+        expected_cluster = {'1', '2'}
+        index = SimhashIndex(self.objs, k=1)
+        clusters = determine_clusters(index, self.objs)
+        self.assertEqual((clusters[0] - expected_cluster), set())
+        self.assertEqual((expected_cluster - clusters[0]), set())
+        self.assertEqual(len(clusters), 3)
+
+    def test_approximate_match_same_cluster(self):
+        expected_cluster = {'1', '2', '4'}
+        index = SimhashIndex(self.objs, k=4)
+        clusters = determine_clusters(index, self.objs)
+        self.assertEqual((clusters[0] - expected_cluster), set())
+        self.assertEqual((expected_cluster - clusters[0]), set())
+        self.assertEqual(len(clusters), 2)
 
 
 if __name__ == '__main__':

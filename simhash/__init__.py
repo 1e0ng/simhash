@@ -8,6 +8,7 @@ import numbers
 import re
 import sys
 from itertools import groupby
+from typing import Type
 
 import numpy as np
 
@@ -261,3 +262,22 @@ class SimhashIndex(object):
 
     def bucket_size(self):
         return len(self.bucket)
+
+
+def determine_clusters(index: Type[SimhashIndex], hashed_docs: list) -> dict:
+    """
+    Builds clusters of similar documents
+
+    :param index: SimhashIndex object
+    :param hashed_docs: list of tuples of (doc_id, Simhash object)
+    """
+    clusters = {}
+    cluster = 0
+    seen = set()
+    for doc in hashed_docs:
+        if doc[0] not in seen:
+            clusters[cluster] = set(index.get_near_dups(doc[1]))
+            seen.update(clusters[cluster])
+            cluster += 1
+    return clusters
+
