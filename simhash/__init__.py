@@ -8,7 +8,6 @@ import numbers
 import re
 import sys
 from itertools import groupby
-from typing import Type
 
 import numpy as np
 
@@ -264,7 +263,7 @@ class SimhashIndex(object):
         return len(self.bucket)
 
 
-def determine_clusters(index: Type[SimhashIndex], hashed_docs: list) -> dict:
+def determine_clusters(index, hashed_docs):
     """
     Builds clusters of similar documents
 
